@@ -2,7 +2,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "visual-ping",
+    name: "visualping",
     platforms: [.macOS(.v13)],
     dependencies: [
         .package(url: "https://github.com/airbnb/lottie-spm.git", from: "4.5.0"),
@@ -10,7 +10,7 @@ let package = Package(
     ],
     targets: [
         .executableTarget(
-            name: "visual-ping",
+            name: "visualping",
             dependencies: [
                 .product(name: "Lottie", package: "lottie-spm"),
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
