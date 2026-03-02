@@ -43,21 +43,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func downloadFile(from urlString: String, completion: @escaping (String) -> Void) {
         guard let url = URL(string: urlString) else {
             fputs("Error: Invalid URL '\(urlString)'\n", stderr)
-            NSApp.terminate(nil)
-            return
+            exit(1)
         }
 
         let task = URLSession.shared.downloadTask(with: url) { tempURL, response, error in
             if let error {
                 fputs("Error downloading: \(error.localizedDescription)\n", stderr)
-                NSApp.terminate(nil)
-                return
+                exit(1)
             }
 
             guard let tempURL else {
                 fputs("Error: No data received from URL.\n", stderr)
-                NSApp.terminate(nil)
-                return
+                exit(1)
             }
 
             let ext = url.pathExtension.isEmpty ? "json" : url.pathExtension
@@ -71,7 +68,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 completion(dest.path)
             } catch {
                 fputs("Error saving file: \(error.localizedDescription)\n", stderr)
-                NSApp.terminate(nil)
+                exit(1)
             }
         }
         task.resume()
@@ -89,8 +86,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             ) { [weak self] view, error in
                 if let error {
                     fputs("Error loading .lottie: \(error.localizedDescription)\n", stderr)
-                    NSApp.terminate(nil)
-                    return
+                    exit(1)
                 }
                 DispatchQueue.main.async {
                     guard let self else {
@@ -107,8 +103,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         animationView = LottieAnimationView(filePath: filePath)
         if animationView.animation == nil {
             fputs("Error: Could not load animation from '\(filePath)'\n", stderr)
-            NSApp.terminate(nil)
-            return
+            exit(1)
         }
 
         setupWindow(with: animationView)
