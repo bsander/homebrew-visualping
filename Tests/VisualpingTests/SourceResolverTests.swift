@@ -129,7 +129,7 @@ final class SourceResolverTests: XCTestCase {
         wait(for: [expectation], timeout: 1)
     }
 
-    func testURLWithNoExtensionDefaultsToJson() {
+    func testURLWithNoExtensionResolvesSuccessfully() {
         let tempFile = FileManager.default.temporaryDirectory
             .appendingPathComponent("downloaded-\(UUID().uuidString).json")
         FileManager.default.createFile(atPath: tempFile.path, contents: Data())

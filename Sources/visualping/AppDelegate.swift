@@ -83,7 +83,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func showAnimation(from filePath: String) {
         let animationView: LottieAnimationView
 
-        if filePath.lowercased().hasSuffix(".lottie") {
+        if AnimationFormat.detect(from: filePath) == .dotLottie {
             animationView = LottieAnimationView(
                 dotLottieFilePath: filePath,
                 configuration: .shared
