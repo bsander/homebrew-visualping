@@ -21,9 +21,7 @@ struct Visualping: ParsableCommand {
     var size: Int = 300
 
     mutating func validate() throws {
-        guard size > 0 else {
-            throw ValidationError("--size must be a positive integer.")
-        }
+        try VisualpingCore.validateSize(size)
     }
 
     mutating func run() throws {
