@@ -9,12 +9,20 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.3.0"),
     ],
     targets: [
+        .target(
+            name: "VisualpingCore"
+        ),
         .executableTarget(
             name: "visualping",
             dependencies: [
+                "VisualpingCore",
                 .product(name: "Lottie", package: "lottie-spm"),
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
             ]
+        ),
+        .testTarget(
+            name: "VisualpingTests",
+            dependencies: ["VisualpingCore"]
         ),
     ]
 )
