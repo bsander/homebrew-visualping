@@ -65,7 +65,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         sourceResolver.resolve(source) { [weak self] result in
             switch result {
             case .success(let path):
-                if self?.source.hasPrefix("http") == true {
+                if self?.source.hasPrefix("https") == true {
                     self?.tempFileURL = URL(fileURLWithPath: path)
                 }
                 completion(path)
