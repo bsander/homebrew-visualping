@@ -1,5 +1,6 @@
 import AppKit
 import Lottie
+import VisualpingCore
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     let source: String

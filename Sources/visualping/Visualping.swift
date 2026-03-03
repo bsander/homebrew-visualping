@@ -1,16 +1,9 @@
 import AppKit
 import ArgumentParser
 import Lottie
+import VisualpingCore
 
-enum ScreenPosition: String, CaseIterable, ExpressibleByArgument {
-    case center
-    case topLeft = "top-left"
-    case topCenter = "top-center"
-    case topRight = "top-right"
-    case bottomLeft = "bottom-left"
-    case bottomCenter = "bottom-center"
-    case bottomRight = "bottom-right"
-}
+extension ScreenPosition: ExpressibleByArgument {}
 
 @main
 struct Visualping: ParsableCommand {
