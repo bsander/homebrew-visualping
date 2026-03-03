@@ -66,9 +66,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             switch result {
             case .success(let path):
                 if self?.source.hasPrefix("http") == true {
-                    DispatchQueue.main.async {
-                        self?.tempFileURL = URL(fileURLWithPath: path)
-                    }
+                    self?.tempFileURL = URL(fileURLWithPath: path)
                 }
                 completion(path)
             case .failure(let error):
