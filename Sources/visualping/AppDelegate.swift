@@ -2,6 +2,32 @@ import AppKit
 import Lottie
 import VisualpingCore
 
+struct URLSessionDownloader: URLDownloader {
+    func download(from url: URL, completion: @escaping (Result<URL, Error>) -> Void) {
+        let task = URLSession.shared.downloadTask(with: url) { tempURL, _, error in
+            if let error {
+                completion(.failure(error))
+                return
+            }
+            guard let tempURL else {
+                completion(.failure(URLError(.badServerResponse)))
+                return
+            }
+            let ext = url.pathExtension.isEmpty ? "json" : url.pathExtension
+            let dest = FileManager.default.temporaryDirectory
+                .appendingPathComponent(UUID().uuidString)
+                .appendingPathExtension(ext)
+            do {
+                try FileManager.default.moveItem(at: tempURL, to: dest)
+                completion(.success(dest))
+            } catch {
+                completion(.failure(error))
+            }
+        }
+        task.resume()
+    }
+}
+
 class AppDelegate: NSObject, NSApplicationDelegate {
     let source: String
     let position: ScreenPosition
@@ -9,11 +35,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private var window: NSWindow?
     private var tempFileURL: URL?
+    private let sourceResolver: SourceResolver
 
     init(source: String, position: ScreenPosition, size: CGFloat) {
         self.source = source
         self.position = position
         self.size = size
+        self.sourceResolver = SourceResolver(downloader: URLSessionDownloader())
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -34,45 +62,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: - Source Resolution
 
     private func resolveSource(completion: @escaping (String) -> Void) {
-        if source.hasPrefix("http://") || source.hasPrefix("https://") {
-            downloadFile(from: source, completion: completion)
-        } else {
-            completion(source)
-        }
-    }
-
-    private func downloadFile(from urlString: String, completion: @escaping (String) -> Void) {
-        guard let url = URL(string: urlString) else {
-            fputs("Error: Invalid URL '\(urlString)'\n", stderr)
-            exit(1)
-        }
-
-        let task = URLSession.shared.downloadTask(with: url) { tempURL, response, error in
-            if let error {
-                fputs("Error downloading: \(error.localizedDescription)\n", stderr)
-                exit(1)
-            }
-
-            guard let tempURL else {
-                fputs("Error: No data received from URL.\n", stderr)
-                exit(1)
-            }
-
-            let ext = url.pathExtension.isEmpty ? "json" : url.pathExtension
-            let dest = FileManager.default.temporaryDirectory
-                .appendingPathComponent(UUID().uuidString)
-                .appendingPathExtension(ext)
-
-            do {
-                try FileManager.default.moveItem(at: tempURL, to: dest)
-                DispatchQueue.main.async { self.tempFileURL = dest }
-                completion(dest.path)
-            } catch {
-                fputs("Error saving file: \(error.localizedDescription)\n", stderr)
+        sourceResolver.resolve(source) { [weak self] result in
+            switch result {
+            case .success(let path):
+                if self?.source.hasPrefix("http") == true {
+                    DispatchQueue.main.async {
+                        self?.tempFileURL = URL(fileURLWithPath: path)
+                    }
+                }
+                completion(path)
+            case .failure(let error):
+                fputs("Error: \(error)\n", stderr)
                 exit(1)
             }
         }
-        task.resume()
     }
 
     // MARK: - Animation Display
