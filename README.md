@@ -12,6 +12,7 @@ A macOS CLI tool that displays Lottie animations as transparent, click-through d
 - Loads from keywords, local files, or URLs
 - Transparent, click-through overlay — doesn't interfere with your workflow
 - 7 screen positions: center, top-left, top-center, top-right, bottom-left, bottom-center, bottom-right
+- Multi-screen support: main screen, all screens, or specific screen by index
 - Configurable animation size
 - No dock icon or menu bar entry
 - Visible on all spaces/desktops
@@ -42,7 +43,7 @@ make install PREFIX=$HOME/.local
 ## Usage
 
 ```
-visualping <source> [--position <position>] [--size <pixels>]
+visualping <source> [--position <position>] [--size <pixels>] [--screen <screen>]
 ```
 
 **Arguments:**
@@ -52,6 +53,7 @@ visualping <source> [--position <position>] [--size <pixels>]
 | `source` | Keyword, URL, or local file path to a `.json` or `.lottie` animation | *(required)* |
 | `--position` | Screen position (see below) | `center` |
 | `--size` | Animation width and height in pixels | `300` |
+| `--screen` | Target screen: `main`, `all`, or index (e.g. `2`) | `main` |
 
 **Positions:** `center`, `top-left`, `top-center`, `top-right`, `bottom-left`, `bottom-center`, `bottom-right`
 
@@ -69,6 +71,12 @@ visualping animation.json
 
 # Download and play from a URL
 visualping https://example.com/alert.lottie --position top-right --size 200
+
+# Play on all connected screens simultaneously
+visualping done --screen all
+
+# Play on the second screen only
+visualping error --screen 2
 ```
 
 ## Keywords
