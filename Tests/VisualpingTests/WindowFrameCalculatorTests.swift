@@ -14,32 +14,32 @@ final class WindowFrameCalculatorTests: XCTestCase {
 
     func testTopLeftPosition() {
         let frame = calculateWindowFrame(in: screen, position: .topLeft, size: size)
-        XCTAssertEqual(frame, CGRect(x: 0, y: 780, width: 300, height: 300))
+        XCTAssertEqual(frame, CGRect(x: 16, y: 764, width: 300, height: 300))
     }
 
     func testTopCenterPosition() {
         let frame = calculateWindowFrame(in: screen, position: .topCenter, size: size)
-        XCTAssertEqual(frame, CGRect(x: 810, y: 780, width: 300, height: 300))
+        XCTAssertEqual(frame, CGRect(x: 810, y: 764, width: 300, height: 300))
     }
 
     func testTopRightPosition() {
         let frame = calculateWindowFrame(in: screen, position: .topRight, size: size)
-        XCTAssertEqual(frame, CGRect(x: 1620, y: 780, width: 300, height: 300))
+        XCTAssertEqual(frame, CGRect(x: 1604, y: 764, width: 300, height: 300))
     }
 
     func testBottomLeftPosition() {
         let frame = calculateWindowFrame(in: screen, position: .bottomLeft, size: size)
-        XCTAssertEqual(frame, CGRect(x: 0, y: 0, width: 300, height: 300))
+        XCTAssertEqual(frame, CGRect(x: 16, y: 16, width: 300, height: 300))
     }
 
     func testBottomCenterPosition() {
         let frame = calculateWindowFrame(in: screen, position: .bottomCenter, size: size)
-        XCTAssertEqual(frame, CGRect(x: 810, y: 0, width: 300, height: 300))
+        XCTAssertEqual(frame, CGRect(x: 810, y: 16, width: 300, height: 300))
     }
 
     func testBottomRightPosition() {
         let frame = calculateWindowFrame(in: screen, position: .bottomRight, size: size)
-        XCTAssertEqual(frame, CGRect(x: 1620, y: 0, width: 300, height: 300))
+        XCTAssertEqual(frame, CGRect(x: 1604, y: 16, width: 300, height: 300))
     }
 
     func testCustomSize() {
@@ -52,7 +52,7 @@ final class WindowFrameCalculatorTests: XCTestCase {
         // Screen offset (e.g., secondary monitor)
         let offsetScreen = CGRect(x: 100, y: 200, width: 1920, height: 1080)
         let frame = calculateWindowFrame(in: offsetScreen, position: .topLeft, size: size)
-        XCTAssertEqual(frame, CGRect(x: 100, y: 980, width: 300, height: 300))
+        XCTAssertEqual(frame, CGRect(x: 116, y: 964, width: 300, height: 300))
     }
 
     func testZeroSizeScreen() {

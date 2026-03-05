@@ -80,7 +80,7 @@ final class ClaudeCodeInstallerTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: nestedURL.path))
     }
 
-    func testInstalledHooksAreAsync() throws {
+    func testInstalledHooksAreSync() throws {
         try installer.install()
 
         let data = try Data(contentsOf: settingsURL)
@@ -89,7 +89,7 @@ final class ClaudeCodeInstallerTests: XCTestCase {
         let stopArray = hooks["Stop"] as! [[String: Any]]
         let hookEntry = stopArray[0]
         let innerHooks = hookEntry["hooks"] as! [[String: Any]]
-        XCTAssertEqual(innerHooks[0]["async"] as? Bool, true)
+        XCTAssertEqual(innerHooks[0]["async"] as? Bool, false)
     }
 
     func testUninstallRemovesVisualpingHooks() throws {
@@ -134,10 +134,29 @@ final class ClaudeCodeInstallerTests: XCTestCase {
             let innerHooks = eventArray[0]["hooks"] as! [[String: Any]]
             let command = innerHooks[0]["command"] as! String
             XCTAssertTrue(
-                command.contains("--label"),
-                "\(event) hook should include --label flag, got: \(command)"
+                command.contains("--path"),
+                "\(event) hook should include --path flag, got: \(command)"
             )
         }
+    }
+
+    func testInstallUpdatesExistingVisualpingHooks() throws {
+        let oldHooks = """
+        {"hooks":{"Stop":[{"matcher":"","hooks":[{"type":"command","command":"visualping done --label old","async":false}]}]}}
+        """
+        try oldHooks.write(to: settingsURL, atomically: true, encoding: .utf8)
+
+        try installer.install()
+
+        let data = try Data(contentsOf: settingsURL)
+        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        let hooks = json["hooks"] as! [String: Any]
+        let stopArray = hooks["Stop"] as! [[String: Any]]
+        XCTAssertEqual(stopArray.count, 1, "Should replace, not duplicate")
+        let innerHooks = stopArray[0]["hooks"] as! [[String: Any]]
+        let command = innerHooks[0]["command"] as! String
+        XCTAssertTrue(command.contains("--path"), "Should update to --path, got: \(command)")
+        XCTAssertFalse(command.contains("--label"), "Should not contain old --label flag")
     }
 
     func testUninstallNoopsWhenNoVisualpingHooks() throws {
