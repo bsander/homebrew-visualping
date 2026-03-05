@@ -9,7 +9,7 @@ build: ## Build release binary
 
 install: build ## Build and install to PREFIX/bin (default: /usr/local)
 	install -d $(PREFIX)/bin
-	install -m 755 $(BUILD_DIR)/$(BINARY_NAME) $(PREFIX)/bin/$(BINARY_NAME)
+	ln -sf $(realpath $(BUILD_DIR)/$(BINARY_NAME)) $(PREFIX)/bin/$(BINARY_NAME)
 
 uninstall: ## Remove binary from PREFIX/bin
 	rm -f $(PREFIX)/bin/$(BINARY_NAME)

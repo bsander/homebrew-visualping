@@ -4,9 +4,9 @@
 
 ## Gotchas
 
-- Lottie asset URLs are not easily discoverable from websites. When users need animations, agents may need to fetch and parse HTML to extract direct `.json` or `.lottie` asset URLs.
 - `Formula/` contains the Homebrew tap formula — it must be updated (version, SHA256) on every release.
 
 ## Conventions
 
-- TDD: write failing tests in `VisualpingTests` before writing implementation code.
+- Always use TDD: write failing tests in `VisualpingTests` before writing implementation code.
+- Always run `make` when completing a coding task.
