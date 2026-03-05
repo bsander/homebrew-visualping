@@ -30,7 +30,6 @@ public struct ClaudeCodeInstaller {
         let hookDefinitions: [(event: String, command: String)] = [
             ("Stop", "visualping done --position bottom-center --screen all --label \"$CLAUDE_PROJECT_DIR\""),
             ("Notification", "visualping attention --position bottom-center --screen all --label \"$CLAUDE_PROJECT_DIR\""),
-            ("PermissionRequest", "visualping attention --position bottom-center --screen all --label \"$CLAUDE_PROJECT_DIR\""),
         ]
 
         for def in hookDefinitions {
