@@ -5,6 +5,13 @@ import VisualpingCore
 
 extension ScreenPosition: ExpressibleByArgument {}
 
+extension ScreenTarget: ExpressibleByArgument {
+    public init?(argument: String) {
+        guard let target = ScreenTarget.parse(argument) else { return nil }
+        self = target
+    }
+}
+
 @main
 struct Visualping: ParsableCommand {
     static let configuration = CommandConfiguration(
@@ -20,6 +27,9 @@ struct Visualping: ParsableCommand {
     @Option(name: .long, help: "Animation width and height in pixels.")
     var size: Int = 300
 
+    @Option(name: .long, help: "Target screen: main, all, or a 1-based index (e.g. 2).")
+    var screen: ScreenTarget = .main
+
     mutating func validate() throws {
         try VisualpingCore.validateSize(size)
     }
@@ -31,7 +41,8 @@ struct Visualping: ParsableCommand {
         let delegate = AppDelegate(
             source: source,
             position: position,
-            size: CGFloat(size)
+            size: CGFloat(size),
+            screenTarget: screen
         )
         app.delegate = delegate
         app.run()

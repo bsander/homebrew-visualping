@@ -32,16 +32,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     let source: String
     let position: ScreenPosition
     let size: CGFloat
+    let screenTarget: ScreenTarget
 
-    private var window: NSWindow?
+    private var windows: [NSWindow] = []
+    private var completionCount = 0
+    private var totalAnimations = 0
     private var tempFileURL: URL?
     private let sourceResolver: SourceResolver
     private let keywordResolver = KeywordResolver()
 
-    init(source: String, position: ScreenPosition, size: CGFloat) {
+    init(source: String, position: ScreenPosition, size: CGFloat, screenTarget: ScreenTarget = .main) {
         self.source = source
         self.position = position
         self.size = size
+        self.screenTarget = screenTarget
         self.sourceResolver = SourceResolver(downloader: URLSessionDownloader())
     }
 
@@ -123,6 +127,30 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: - Animation Display
 
     private func showAnimation(from filePath: String) {
+        let screens = resolveScreens()
+        for screen in screens {
+            showAnimationOnScreen(from: filePath, screen: screen)
+        }
+    }
+
+    private func resolveScreens() -> [NSScreen] {
+        switch screenTarget {
+        case .main:
+            guard let main = NSScreen.main else { return [] }
+            return [main]
+        case .all:
+            return NSScreen.screens
+        case .index(let n):
+            let allScreens = NSScreen.screens
+            guard n >= 1, n <= allScreens.count else {
+                fputs("Error: screen \(n) not found (\(allScreens.count) screen\(allScreens.count == 1 ? "" : "s") available)\n", stderr)
+                exit(1)
+            }
+            return [allScreens[n - 1]]
+        }
+    }
+
+    private func showAnimationOnScreen(from filePath: String, screen: NSScreen) {
         let animationView: LottieAnimationView
 
         if AnimationFormat.detect(from: filePath) == .dotLottie {
@@ -139,10 +167,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                         NSApp.terminate(nil)
                         return
                     }
-                    self.setupWindow(with: view)
+                    self.setupWindow(with: view, on: screen)
                     self.playAnimation(view)
                 }
             }
+            totalAnimations += 1
             return
         }
 
@@ -152,12 +181,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             exit(1)
         }
 
-        setupWindow(with: animationView)
+        totalAnimations += 1
+        setupWindow(with: animationView, on: screen)
         playAnimation(animationView)
     }
 
-    private func setupWindow(with animationView: LottieAnimationView) {
-        let frame = calculateWindowFrame()
+    private func setupWindow(with animationView: LottieAnimationView, on screen: NSScreen) {
+        let frame = VisualpingCore.calculateWindowFrame(
+            in: screen.visibleFrame,
+            position: position,
+            size: size
+        )
 
         let window = NSWindow(
             contentRect: frame,
@@ -179,24 +213,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.contentView = animationView
         window.orderFrontRegardless()
 
-        self.window = window
+        windows.append(window)
     }
 
     private func playAnimation(_ animationView: LottieAnimationView) {
         animationView.loopMode = .playOnce
-        animationView.play { _ in
-            NSApp.terminate(nil)
+        animationView.play { [weak self] _ in
+            guard let self else { return }
+            self.completionCount += 1
+            if self.completionCount >= self.totalAnimations {
+                NSApp.terminate(nil)
+            }
         }
-    }
-
-    private func calculateWindowFrame() -> NSRect {
-        guard let screen = NSScreen.main else {
-            return NSRect(x: 0, y: 0, width: size, height: size)
-        }
-        return VisualpingCore.calculateWindowFrame(
-            in: screen.visibleFrame,
-            position: position,
-            size: size
-        )
     }
 }
