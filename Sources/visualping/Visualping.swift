@@ -15,7 +15,15 @@ extension ScreenTarget: ExpressibleByArgument {
 @main
 struct Visualping: ParsableCommand {
     static let configuration = CommandConfiguration(
-        abstract: "Play Lottie animations as desktop overlays."
+        abstract: "Play Lottie animations as desktop overlays.",
+        subcommands: [Play.self, AgentHook.self],
+        defaultSubcommand: Play.self
+    )
+}
+
+struct Play: ParsableCommand {
+    static let configuration = CommandConfiguration(
+        abstract: "Play a Lottie animation overlay."
     )
 
     @Argument(help: "Keyword (e.g. done, error, attention), URL, or local file path.")
