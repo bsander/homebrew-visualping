@@ -123,6 +123,24 @@ final class ClaudeCodeInstallerTests: XCTestCase {
         XCTAssertNoThrow(try installer.uninstall())
     }
 
+    func testInstalledHooksIncludeLabel() throws {
+        try installer.install()
+
+        let data = try Data(contentsOf: settingsURL)
+        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        let hooks = json["hooks"] as! [String: Any]
+
+        for event in ["Stop", "Notification", "PermissionRequest"] {
+            let eventArray = hooks[event] as! [[String: Any]]
+            let innerHooks = eventArray[0]["hooks"] as! [[String: Any]]
+            let command = innerHooks[0]["command"] as! String
+            XCTAssertTrue(
+                command.contains("--label"),
+                "\(event) hook should include --label flag, got: \(command)"
+            )
+        }
+    }
+
     func testUninstallNoopsWhenNoVisualpingHooks() throws {
         let existing = """
         {"hooks":{"Stop":[{"matcher":"","hooks":[{"type":"command","command":"echo hi"}]}]}}

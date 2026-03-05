@@ -28,9 +28,9 @@ public struct ClaudeCodeInstaller {
         var hooks = settings["hooks"] as? [String: Any] ?? [:]
 
         let hookDefinitions: [(event: String, command: String)] = [
-            ("Stop", "visualping done --position bottom-center --screen all"),
-            ("Notification", "visualping attention --position bottom-center --screen all"),
-            ("PermissionRequest", "visualping attention --position bottom-center --screen all"),
+            ("Stop", "visualping done --position bottom-center --screen all --label \"$CLAUDE_PROJECT_DIR\""),
+            ("Notification", "visualping attention --position bottom-center --screen all --label \"$CLAUDE_PROJECT_DIR\""),
+            ("PermissionRequest", "visualping attention --position bottom-center --screen all --label \"$CLAUDE_PROJECT_DIR\""),
         ]
 
         for def in hookDefinitions {

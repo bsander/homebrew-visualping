@@ -16,10 +16,11 @@ public struct OpenCodeInstaller {
     export const VisualpingPlugin = async ({ $ }) => {
       return {
         event: async ({ event }) => {
+          const label = process.cwd()
           if (event.type === "session.idle") {
-            await $`visualping done --position bottom-center --screen all`
+            await $`visualping done --position bottom-center --screen all --label ${label}`
           } else if (event.type === "permission.asked") {
-            await $`visualping attention --position bottom-center --screen all`
+            await $`visualping attention --position bottom-center --screen all --label ${label}`
           }
         }
       }
