@@ -30,31 +30,49 @@ struct Play: ParsableCommand {
     var source: String
 
     @Option(name: .long, help: "Screen position: center, top-left, top-right, bottom-left, bottom-right.")
-    var position: ScreenPosition = .center
+    var position: ScreenPosition = .bottomCenter
 
-    @Option(name: .long, help: "Animation width and height in pixels.")
-    var size: Int = 300
+    @Option(name: .long, help: "Animation size in pixels (e.g. 150) or percentage of screen height (e.g. 15%).")
+    var size: String = "10%"
 
     @Option(name: .long, help: "Target screen: main, all, or a 1-based index (e.g. 2).")
     var screen: ScreenTarget = .main
 
-    @Option(name: .long, help: "Text label displayed on a glass pill at the bottom of the animation.")
+    @Option(name: .long, help: "Animation duration in seconds.")
+    var duration: Double = 1.5
+
+    @Option(name: .long, help: "Text label displayed on a pill at the bottom of the animation.")
     var label: String?
 
+    @Option(name: .long, help: "Path whose last component is displayed as the label.")
+    var path: String?
+
     mutating func validate() throws {
-        try VisualpingCore.validateSize(size)
+        _ = try VisualpingCore.parseSize(size)
+        try VisualpingCore.validateDuration(duration)
+        if label != nil && path != nil {
+            throw ArgumentParser.ValidationError("Cannot specify both --label and --path.")
+        }
     }
 
     mutating func run() throws {
         let app = NSApplication.shared
         app.setActivationPolicy(.accessory)
 
+        let resolvedLabel: String?
+        if let path {
+            resolvedLabel = URL(fileURLWithPath: path).lastPathComponent
+        } else {
+            resolvedLabel = label
+        }
+
         let delegate = AppDelegate(
             source: source,
             position: position,
-            size: CGFloat(size),
+            sizeSpec: try! VisualpingCore.parseSize(size),
             screenTarget: screen,
-            label: label
+            duration: duration,
+            label: resolvedLabel
         )
         app.delegate = delegate
         app.run()

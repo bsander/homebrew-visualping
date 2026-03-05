@@ -31,8 +31,9 @@ struct URLSessionDownloader: URLDownloader {
 class AppDelegate: NSObject, NSApplicationDelegate {
     let source: String
     let position: ScreenPosition
-    let size: CGFloat
+    let sizeSpec: SizeSpec
     let screenTarget: ScreenTarget
+    let duration: Double
     let label: String?
 
     private var windows: [NSWindow] = []
@@ -42,11 +43,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private let sourceResolver: SourceResolver
     private let keywordResolver = KeywordResolver()
 
-    init(source: String, position: ScreenPosition, size: CGFloat, screenTarget: ScreenTarget = .main, label: String? = nil) {
+    init(source: String, position: ScreenPosition, sizeSpec: SizeSpec, screenTarget: ScreenTarget = .main, duration: Double = 1.5, label: String? = nil) {
         self.source = source
         self.position = position
-        self.size = size
+        self.sizeSpec = sizeSpec
         self.screenTarget = screenTarget
+        self.duration = duration
         self.label = label
         self.sourceResolver = SourceResolver(downloader: URLSessionDownloader())
     }
@@ -188,7 +190,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         playAnimation(animationView)
     }
 
+    private func resolveSize(for screen: NSScreen) -> CGFloat {
+        switch sizeSpec {
+        case .pixels(let px):
+            return CGFloat(px)
+        case .percent(let pct):
+            return screen.visibleFrame.height * CGFloat(pct) / 100
+        }
+    }
+
     private func setupWindow(with animationView: LottieAnimationView, on screen: NSScreen) {
+        let size = resolveSize(for: screen)
         let frame = VisualpingCore.calculateWindowFrame(
             in: screen.visibleFrame,
             position: position,
@@ -224,38 +236,26 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         guard let label, !label.isEmpty, let contentView = window.contentView else { return }
 
         let textField = NSTextField(labelWithString: label)
-        textField.font = NSFont.systemFont(ofSize: 10, weight: .medium)
+        textField.font = NSFont.systemFont(ofSize: 13, weight: .semibold)
         textField.textColor = .white
         textField.alignment = .center
         textField.lineBreakMode = .byTruncatingMiddle
         textField.maximumNumberOfLines = 1
         textField.translatesAutoresizingMaskIntoConstraints = false
 
-        let pill: NSView
-        if #available(macOS 26.0, *) {
-            let glass = NSGlassEffectView()
-            glass.contentView = textField
-            glass.cornerRadius = 10
-            glass.translatesAutoresizingMaskIntoConstraints = false
-            pill = glass
-        } else {
-            let vibrancy = NSVisualEffectView()
-            vibrancy.material = .hudWindow
-            vibrancy.blendingMode = .behindWindow
-            vibrancy.state = .active
-            vibrancy.wantsLayer = true
-            vibrancy.layer?.cornerRadius = 10
-            vibrancy.layer?.masksToBounds = true
-            vibrancy.translatesAutoresizingMaskIntoConstraints = false
-            vibrancy.addSubview(textField)
-            NSLayoutConstraint.activate([
-                textField.leadingAnchor.constraint(equalTo: vibrancy.leadingAnchor, constant: 8),
-                textField.trailingAnchor.constraint(equalTo: vibrancy.trailingAnchor, constant: -8),
-                textField.topAnchor.constraint(equalTo: vibrancy.topAnchor, constant: 4),
-                textField.bottomAnchor.constraint(equalTo: vibrancy.bottomAnchor, constant: -4),
-            ])
-            pill = vibrancy
-        }
+        let pill = NSView()
+        pill.wantsLayer = true
+        pill.layer?.backgroundColor = NSColor.black.withAlphaComponent(0.6).cgColor
+        pill.layer?.cornerRadius = 12
+        pill.layer?.masksToBounds = true
+        pill.translatesAutoresizingMaskIntoConstraints = false
+        pill.addSubview(textField)
+        NSLayoutConstraint.activate([
+            textField.leadingAnchor.constraint(equalTo: pill.leadingAnchor, constant: 10),
+            textField.trailingAnchor.constraint(equalTo: pill.trailingAnchor, constant: -10),
+            textField.topAnchor.constraint(equalTo: pill.topAnchor, constant: 5),
+            textField.bottomAnchor.constraint(equalTo: pill.bottomAnchor, constant: -5),
+        ])
 
         contentView.addSubview(pill)
 
@@ -268,6 +268,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func playAnimation(_ animationView: LottieAnimationView) {
         animationView.loopMode = .playOnce
+        if let nativeDuration = animationView.animation?.duration, nativeDuration > 0 {
+            animationView.animationSpeed = CGFloat(nativeDuration / duration)
+        }
         animationView.play { [weak self] _ in
             guard let self else { return }
             self.completionCount += 1
