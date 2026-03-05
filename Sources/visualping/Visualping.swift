@@ -11,7 +11,7 @@ struct Visualping: ParsableCommand {
         abstract: "Play Lottie animations as desktop overlays."
     )
 
-    @Argument(help: "URL or local file path to a .json or .lottie animation.")
+    @Argument(help: "Keyword (e.g. done, error, attention), URL, or local file path.")
     var source: String
 
     @Option(name: .long, help: "Screen position: center, top-left, top-right, bottom-left, bottom-right.")

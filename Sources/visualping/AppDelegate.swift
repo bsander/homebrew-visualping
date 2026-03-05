@@ -36,6 +36,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var window: NSWindow?
     private var tempFileURL: URL?
     private let sourceResolver: SourceResolver
+    private let keywordResolver = KeywordResolver()
 
     init(source: String, position: ScreenPosition, size: CGFloat) {
         self.source = source
@@ -51,10 +52,36 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        resolveSource { [weak self] filePath in
-            guard let self else { return }
+        let resolvedSource: String
+        if let keywordPath = keywordResolver.resolve(source) {
+            resolvedSource = keywordPath
+        } else {
+            resolvedSource = source
+        }
+
+        // If keyword resolved to a URL, use SourceResolver for download+cache
+        if resolvedSource.hasPrefix("http://") || resolvedSource.hasPrefix("https://") {
+            let cache = AnimationCache()
+            if cache.isCached(urlString: resolvedSource) {
+                let cachedPath = cache.cachedPath(for: resolvedSource)
+                DispatchQueue.main.async {
+                    self.showAnimation(from: cachedPath)
+                }
+            } else {
+                resolveAndCacheSource(resolvedSource, cache: cache)
+            }
+        } else if resolvedSource != source {
+            // Keyword resolved to a local file path
             DispatchQueue.main.async {
-                self.showAnimation(from: filePath)
+                self.showAnimation(from: resolvedSource)
+            }
+        } else {
+            // Not a keyword — use existing resolution flow
+            resolveSource { [weak self] filePath in
+                guard let self else { return }
+                DispatchQueue.main.async {
+                    self.showAnimation(from: filePath)
+                }
             }
         }
     }
@@ -69,6 +96,23 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     self?.tempFileURL = URL(fileURLWithPath: path)
                 }
                 completion(path)
+            case .failure(let error):
+                fputs("Error: \(error)\n", stderr)
+                exit(1)
+            }
+        }
+    }
+
+    private func resolveAndCacheSource(_ urlString: String, cache: AnimationCache) {
+        sourceResolver.resolve(urlString) { [weak self] result in
+            switch result {
+            case .success(let downloadedPath):
+                try? cache.store(fileAt: downloadedPath, for: urlString)
+                try? FileManager.default.removeItem(atPath: downloadedPath)
+                let cachedPath = cache.cachedPath(for: urlString)
+                DispatchQueue.main.async {
+                    self?.showAnimation(from: cachedPath)
+                }
             case .failure(let error):
                 fputs("Error: \(error)\n", stderr)
                 exit(1)
