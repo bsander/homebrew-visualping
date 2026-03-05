@@ -26,6 +26,7 @@ final class ClaudeCodeInstallerTests: XCTestCase {
         let hooks = json["hooks"] as! [String: Any]
         XCTAssertNotNil(hooks["Stop"])
         XCTAssertNotNil(hooks["Notification"])
+        XCTAssertNotNil(hooks["PermissionRequest"])
     }
 
     func testInstallPreservesExistingSettings() throws {
@@ -100,6 +101,7 @@ final class ClaudeCodeInstallerTests: XCTestCase {
         let hooks = json["hooks"] as? [String: Any] ?? [:]
         XCTAssertNil(hooks["Stop"])
         XCTAssertNil(hooks["Notification"])
+        XCTAssertNil(hooks["PermissionRequest"])
     }
 
     func testUninstallPreservesOtherHooks() throws {
