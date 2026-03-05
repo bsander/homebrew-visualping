@@ -38,6 +38,9 @@ struct Play: ParsableCommand {
     @Option(name: .long, help: "Target screen: main, all, or a 1-based index (e.g. 2).")
     var screen: ScreenTarget = .main
 
+    @Option(name: .long, help: "Text label displayed on a glass pill at the bottom of the animation.")
+    var label: String?
+
     mutating func validate() throws {
         try VisualpingCore.validateSize(size)
     }
@@ -50,7 +53,8 @@ struct Play: ParsableCommand {
             source: source,
             position: position,
             size: CGFloat(size),
-            screenTarget: screen
+            screenTarget: screen,
+            label: label
         )
         app.delegate = delegate
         app.run()

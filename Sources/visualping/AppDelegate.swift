@@ -33,6 +33,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     let position: ScreenPosition
     let size: CGFloat
     let screenTarget: ScreenTarget
+    let label: String?
 
     private var windows: [NSWindow] = []
     private var completionCount = 0
@@ -41,11 +42,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private let sourceResolver: SourceResolver
     private let keywordResolver = KeywordResolver()
 
-    init(source: String, position: ScreenPosition, size: CGFloat, screenTarget: ScreenTarget = .main) {
+    init(source: String, position: ScreenPosition, size: CGFloat, screenTarget: ScreenTarget = .main, label: String? = nil) {
         self.source = source
         self.position = position
         self.size = size
         self.screenTarget = screenTarget
+        self.label = label
         self.sourceResolver = SourceResolver(downloader: URLSessionDownloader())
     }
 
@@ -213,7 +215,55 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.contentView = animationView
         window.orderFrontRegardless()
 
+        addLabelOverlay(to: window)
+
         windows.append(window)
+    }
+
+    private func addLabelOverlay(to window: NSWindow) {
+        guard let label, !label.isEmpty, let contentView = window.contentView else { return }
+
+        let textField = NSTextField(labelWithString: label)
+        textField.font = NSFont.systemFont(ofSize: 10, weight: .medium)
+        textField.textColor = .white
+        textField.alignment = .center
+        textField.lineBreakMode = .byTruncatingMiddle
+        textField.maximumNumberOfLines = 1
+        textField.translatesAutoresizingMaskIntoConstraints = false
+
+        let pill: NSView
+        if #available(macOS 26.0, *) {
+            let glass = NSGlassEffectView()
+            glass.contentView = textField
+            glass.cornerRadius = 10
+            glass.translatesAutoresizingMaskIntoConstraints = false
+            pill = glass
+        } else {
+            let vibrancy = NSVisualEffectView()
+            vibrancy.material = .hudWindow
+            vibrancy.blendingMode = .behindWindow
+            vibrancy.state = .active
+            vibrancy.wantsLayer = true
+            vibrancy.layer?.cornerRadius = 10
+            vibrancy.layer?.masksToBounds = true
+            vibrancy.translatesAutoresizingMaskIntoConstraints = false
+            vibrancy.addSubview(textField)
+            NSLayoutConstraint.activate([
+                textField.leadingAnchor.constraint(equalTo: vibrancy.leadingAnchor, constant: 8),
+                textField.trailingAnchor.constraint(equalTo: vibrancy.trailingAnchor, constant: -8),
+                textField.topAnchor.constraint(equalTo: vibrancy.topAnchor, constant: 4),
+                textField.bottomAnchor.constraint(equalTo: vibrancy.bottomAnchor, constant: -4),
+            ])
+            pill = vibrancy
+        }
+
+        contentView.addSubview(pill)
+
+        NSLayoutConstraint.activate([
+            pill.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            pill.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -4),
+            pill.widthAnchor.constraint(lessThanOrEqualTo: contentView.widthAnchor, constant: -16),
+        ])
     }
 
     private func playAnimation(_ animationView: LottieAnimationView) {
