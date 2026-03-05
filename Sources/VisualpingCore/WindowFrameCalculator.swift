@@ -1,9 +1,12 @@
 import CoreGraphics
 
+public let defaultMargin: CGFloat = 16
+
 public func calculateWindowFrame(
     in screenFrame: CGRect,
     position: ScreenPosition,
-    size: CGFloat
+    size: CGFloat,
+    margin: CGFloat = defaultMargin
 ) -> CGRect {
     let x: CGFloat
     let y: CGFloat
@@ -13,23 +16,23 @@ public func calculateWindowFrame(
         x = screenFrame.midX - size / 2
         y = screenFrame.midY - size / 2
     case .topLeft:
-        x = screenFrame.minX
-        y = screenFrame.maxY - size
+        x = screenFrame.minX + margin
+        y = screenFrame.maxY - size - margin
     case .topCenter:
         x = screenFrame.midX - size / 2
-        y = screenFrame.maxY - size
+        y = screenFrame.maxY - size - margin
     case .topRight:
-        x = screenFrame.maxX - size
-        y = screenFrame.maxY - size
+        x = screenFrame.maxX - size - margin
+        y = screenFrame.maxY - size - margin
     case .bottomLeft:
-        x = screenFrame.minX
-        y = screenFrame.minY
+        x = screenFrame.minX + margin
+        y = screenFrame.minY + margin
     case .bottomCenter:
         x = screenFrame.midX - size / 2
-        y = screenFrame.minY
+        y = screenFrame.minY + margin
     case .bottomRight:
-        x = screenFrame.maxX - size
-        y = screenFrame.minY
+        x = screenFrame.maxX - size - margin
+        y = screenFrame.minY + margin
     }
 
     return CGRect(x: x, y: y, width: size, height: size)
