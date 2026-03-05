@@ -28,20 +28,20 @@ public struct ClaudeCodeInstaller {
         var hooks = settings["hooks"] as? [String: Any] ?? [:]
 
         let hookDefinitions: [(event: String, command: String)] = [
-            ("Stop", "visualping done --position bottom-center --screen all --label \"$CLAUDE_PROJECT_DIR\""),
-            ("Notification", "visualping attention --position bottom-center --screen all --label \"$CLAUDE_PROJECT_DIR\""),
+            ("Stop", "visualping done --position bottom-center --screen all --path \"$CLAUDE_PROJECT_DIR\""),
+            ("Notification", "visualping attention --position bottom-center --screen all --path \"$CLAUDE_PROJECT_DIR\""),
         ]
 
         for def in hookDefinitions {
             var eventArray = hooks[def.event] as? [[String: Any]] ?? []
 
-            let alreadyInstalled = eventArray.contains { entry in
+            // Remove any existing visualping entries so we always update to the latest command
+            eventArray.removeAll { entry in
                 guard let innerHooks = entry["hooks"] as? [[String: Any]] else { return false }
                 return innerHooks.contains { h in
                     (h["command"] as? String)?.contains("visualping") == true
                 }
             }
-            if alreadyInstalled { continue }
 
             let entry: [String: Any] = [
                 "matcher": "",
@@ -49,7 +49,7 @@ public struct ClaudeCodeInstaller {
                     [
                         "type": "command",
                         "command": def.command,
-                        "async": true,
+                        "async": false,
                     ] as [String: Any]
                 ],
             ]

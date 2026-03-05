@@ -18,9 +18,9 @@ public struct OpenCodeInstaller {
         event: async ({ event }) => {
           const label = process.cwd()
           if (event.type === "session.idle") {
-            await $`visualping done --position bottom-center --screen all --label ${label}`
+            await $`visualping done --position bottom-center --screen all --path ${label}`
           } else if (event.type === "permission.asked") {
-            await $`visualping attention --position bottom-center --screen all --label ${label}`
+            await $`visualping attention --position bottom-center --screen all --path ${label}`
           }
         }
       }
