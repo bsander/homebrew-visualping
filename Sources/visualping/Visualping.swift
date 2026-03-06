@@ -50,21 +50,13 @@ struct Play: ParsableCommand {
     mutating func validate() throws {
         _ = try VisualpingCore.parseSize(size)
         try VisualpingCore.validateDuration(duration)
-        if label != nil && path != nil {
-            throw ArgumentParser.ValidationError("Cannot specify both --label and --path.")
-        }
     }
 
     mutating func run() throws {
         let app = NSApplication.shared
         app.setActivationPolicy(.accessory)
 
-        let resolvedLabel: String?
-        if let path {
-            resolvedLabel = URL(fileURLWithPath: path).lastPathComponent
-        } else {
-            resolvedLabel = label
-        }
+        let resolvedLabel = LabelResolver.resolve(path: path, label: label)
 
         let delegate = AppDelegate(
             source: source,
