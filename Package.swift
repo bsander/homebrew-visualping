@@ -10,8 +10,7 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "VisualpingCore",
-            resources: [.process("Resources")]
+            name: "VisualpingCore"
         ),
         .executableTarget(
             name: "visualping",
