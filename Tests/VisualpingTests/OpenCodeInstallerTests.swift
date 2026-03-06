@@ -69,4 +69,38 @@ final class OpenCodeInstallerTests: XCTestCase {
     func testUninstallNoopsWhenNoFile() throws {
         XCTAssertNoThrow(try installer.uninstall())
     }
+
+    func testInstallContentCachesSessionTitle() throws {
+        try installer.install()
+        let content = try String(contentsOf: pluginURL, encoding: .utf8)
+        XCTAssertTrue(content.contains("session.updated"))
+        XCTAssertTrue(content.contains("info"))
+        XCTAssertTrue(content.contains("title"))
+    }
+
+    func testInstallContentUsesPathAndLabel() throws {
+        try installer.install()
+        let content = try String(contentsOf: pluginURL, encoding: .utf8)
+        XCTAssertTrue(content.contains("--path"))
+        XCTAssertTrue(content.contains("--label"))
+    }
+
+    func testInstallContentContainsSessionError() throws {
+        try installer.install()
+        let content = try String(contentsOf: pluginURL, encoding: .utf8)
+        XCTAssertTrue(content.contains("session.error"))
+    }
+
+    func testInstallContentContainsVisualpingError() throws {
+        try installer.install()
+        let content = try String(contentsOf: pluginURL, encoding: .utf8)
+        XCTAssertTrue(content.contains("visualping error"))
+    }
+
+    func testDefaultPluginURLUsesGlobalConfigDir() {
+        let installer = OpenCodeInstaller()
+        let expected = FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent(".config/opencode/plugins/visualping.js")
+        XCTAssertEqual(installer.pluginURL, expected)
+    }
 }
