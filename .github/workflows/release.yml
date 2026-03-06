@@ -43,23 +43,26 @@ jobs:
           git tag "$TAG"
           git push origin "$TAG"
 
+      - name: Create source tarball
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          git archive --format=tar.gz --prefix="visualping-${TAG}/" "$TAG" -o "visualping-${TAG}.tar.gz"
+
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG="${{ steps.version.outputs.tag }}"
-          gh release create "$TAG" --generate-notes
+          gh release create "$TAG" "visualping-${TAG}.tar.gz" --generate-notes
 
       - name: Update formula
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG="${{ steps.version.outputs.tag }}"
-          TARBALL_URL="https://github.com/${{ github.repository }}/archive/refs/tags/${TAG}.tar.gz"
-          curl -sL "$TARBALL_URL" -o release.tar.gz
-          SHA256=$(shasum -a 256 release.tar.gz | awk '{print $1}')
-          rm release.tar.gz
-          sed -i '' "s|url \".*\"|url \"${TARBALL_URL}\"|" Formula/visualping.rb
+          SHA256=$(shasum -a 256 "visualping-${TAG}.tar.gz" | awk '{print $1}')
+          ASSET_URL="https://github.com/${{ github.repository }}/releases/download/${TAG}/visualping-${TAG}.tar.gz"
+          VERSION="${TAG#v}"
+          sed -i '' "s|url \".*\"|url \"${ASSET_URL}\"|" Formula/visualping.rb
+          sed -i '' "s|version \".*\"|version \"${VERSION}\"|" Formula/visualping.rb
           sed -i '' "s|sha256 \".*\"|sha256 \"${SHA256}\"|" Formula/visualping.rb
 
       - name: Commit and push formula
