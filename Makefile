@@ -5,7 +5,7 @@ BUILD_DIR = .build/release
 .PHONY: build install dev uninstall clean help
 
 build: ## Build release binary
-	swift build -c release
+	swift build -c release --disable-sandbox
 
 install: build ## Copy binary to PREFIX/bin (used by Homebrew)
 	install -d $(PREFIX)/bin
