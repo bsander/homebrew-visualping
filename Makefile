@@ -2,12 +2,16 @@ PREFIX ?= /usr/local
 BINARY_NAME = visualping
 BUILD_DIR = .build/release
 
-.PHONY: build install uninstall clean help
+.PHONY: build install dev uninstall clean help
 
 build: ## Build release binary
 	swift build -c release
 
-install: build ## Build and install to PREFIX/bin (default: /usr/local)
+install: build ## Copy binary to PREFIX/bin (used by Homebrew)
+	install -d $(PREFIX)/bin
+	install $(BUILD_DIR)/$(BINARY_NAME) $(PREFIX)/bin/$(BINARY_NAME)
+
+dev: build ## Symlink binary to PREFIX/bin (for local development)
 	install -d $(PREFIX)/bin
 	ln -sf $(realpath $(BUILD_DIR)/$(BINARY_NAME)) $(PREFIX)/bin/$(BINARY_NAME)
 

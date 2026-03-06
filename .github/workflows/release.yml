@@ -1,0 +1,91 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'Formula/**'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build
+        run: swift build -c release
+
+      - name: Test
+        run: swift test
+
+      - name: Compute version
+        id: version
+        run: |
+          BASE="v0.$(date +%Y.%m%d)"
+          TAG="$BASE"
+          SUFFIX=1
+          while git rev-parse "$TAG" >/dev/null 2>&1; do
+            TAG="${BASE}.${SUFFIX}"
+            SUFFIX=$((SUFFIX + 1))
+          done
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Create and push tag
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          git tag "$TAG"
+          git push origin "$TAG"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          gh release create "$TAG" --generate-notes
+
+      - name: Update formula
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          TARBALL_URL="https://github.com/${{ github.repository }}/archive/refs/tags/${TAG}.tar.gz"
+          curl -sL "$TARBALL_URL" -o release.tar.gz
+          SHA256=$(shasum -a 256 release.tar.gz | awk '{print $1}')
+          rm release.tar.gz
+          cat > Formula/visualping.rb << 'FORMULA'
+class Visualping < Formula
+  desc "macOS CLI tool that displays Lottie animations as transparent desktop overlays"
+  homepage "https://github.com/bsander/homebrew-visualping"
+  url "PLACEHOLDER_URL"
+  sha256 "PLACEHOLDER_SHA256"
+  license "MIT"
+
+  depends_on xcode: ["15.0", :build]
+  depends_on :macos
+
+  def install
+    system "make", "install", "PREFIX=#{prefix}"
+  end
+
+  test do
+    assert_match "OVERVIEW:", shell_output("#{bin}/visualping --help")
+  end
+end
+FORMULA
+          sed -i '' "s|PLACEHOLDER_URL|${TARBALL_URL}|" Formula/visualping.rb
+          sed -i '' "s|PLACEHOLDER_SHA256|${SHA256}|" Formula/visualping.rb
+
+      - name: Commit and push formula
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/visualping.rb
+          git commit -m "Update formula for ${{ steps.version.outputs.tag }} [skip ci]"
+          git push origin main
