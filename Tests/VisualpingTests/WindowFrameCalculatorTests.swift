@@ -60,4 +60,15 @@ final class WindowFrameCalculatorTests: XCTestCase {
         let frame = calculateWindowFrame(in: emptyScreen, position: .center, size: size)
         XCTAssertEqual(frame, CGRect(x: -150, y: -150, width: 300, height: 300))
     }
+
+    func testFullscreenFrame() {
+        let frame = calculateFullscreenFrame(in: screen)
+        XCTAssertEqual(frame, screen)
+    }
+
+    func testFullscreenFrameNonStandardOrigin() {
+        let offsetScreen = CGRect(x: 100, y: 200, width: 1920, height: 1080)
+        let frame = calculateFullscreenFrame(in: offsetScreen)
+        XCTAssertEqual(frame, offsetScreen)
+    }
 }

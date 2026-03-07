@@ -37,3 +37,7 @@ public func calculateWindowFrame(
 
     return CGRect(x: x, y: y, width: size, height: size)
 }
+
+public func calculateFullscreenFrame(in screenFrame: CGRect) -> CGRect {
+    return screenFrame
+}

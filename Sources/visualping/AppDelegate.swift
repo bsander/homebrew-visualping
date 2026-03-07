@@ -33,8 +33,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     let position: ScreenPosition
     let sizeSpec: SizeSpec
     let screenTarget: ScreenTarget
-    let duration: Double
+    let duration: Double?
     let label: String?
+    let fullscreen: Bool
 
     private var windows: [NSWindow] = []
     private var completionCount = 0
@@ -43,13 +44,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private let sourceResolver: SourceResolver
     private let keywordResolver = KeywordResolver()
 
-    init(source: String, position: ScreenPosition, sizeSpec: SizeSpec, screenTarget: ScreenTarget = .main, duration: Double = 1.5, label: String? = nil) {
+    init(source: String, position: ScreenPosition, sizeSpec: SizeSpec, screenTarget: ScreenTarget = .main, duration: Double? = nil, label: String? = nil, fullscreen: Bool = false) {
         self.source = source
         self.position = position
         self.sizeSpec = sizeSpec
         self.screenTarget = screenTarget
         self.duration = duration
         self.label = label
+        self.fullscreen = fullscreen
         self.sourceResolver = SourceResolver(downloader: URLSessionDownloader())
     }
 
@@ -200,12 +202,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func setupWindow(with animationView: LottieAnimationView, on screen: NSScreen) {
-        let size = resolveSize(for: screen)
-        let frame = VisualpingCore.calculateWindowFrame(
-            in: screen.visibleFrame,
-            position: position,
-            size: size
-        )
+        let frame: CGRect
+        if fullscreen {
+            frame = VisualpingCore.calculateFullscreenFrame(in: screen.frame)
+        } else {
+            let size = resolveSize(for: screen)
+            frame = VisualpingCore.calculateWindowFrame(
+                in: screen.visibleFrame,
+                position: position,
+                size: size
+            )
+        }
 
         let window = NSWindow(
             contentRect: frame,
@@ -216,12 +223,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.isOpaque = false
         window.backgroundColor = .clear
         window.hasShadow = false
-        window.level = .floating
+        window.level = fullscreen ? .screenSaver : .floating
         window.ignoresMouseEvents = true
         window.collectionBehavior = [.canJoinAllSpaces, .stationary]
 
         animationView.frame = NSRect(origin: .zero, size: frame.size)
-        animationView.contentMode = .scaleAspectFit
+        animationView.contentMode = fullscreen ? .scaleAspectFill : .scaleAspectFit
         animationView.backgroundBehavior = .forceFinish
 
         window.contentView = animationView
@@ -268,7 +275,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func playAnimation(_ animationView: LottieAnimationView) {
         animationView.loopMode = .playOnce
-        if let nativeDuration = animationView.animation?.duration, nativeDuration > 0 {
+        if let duration, let nativeDuration = animationView.animation?.duration, nativeDuration > 0 {
             animationView.animationSpeed = CGFloat(nativeDuration / duration)
         }
         animationView.play { [weak self] _ in
