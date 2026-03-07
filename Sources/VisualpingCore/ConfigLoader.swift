@@ -24,6 +24,10 @@ public struct DefaultsConfig: Decodable, Equatable {
 
 public struct ConfigLoader {
     private let configURL: URL
+    private lazy var configFile: ConfigFile? = {
+        guard let data = try? Data(contentsOf: configURL) else { return nil }
+        return try? JSONDecoder().decode(ConfigFile.self, from: data)
+    }()
 
     public init(configURL: URL) {
         self.configURL = configURL
@@ -35,22 +39,12 @@ public struct ConfigLoader {
             .appendingPathComponent(".config/visualping/config.json")
     }
 
-    public func load() -> [String: String] {
-        guard let data = try? Data(contentsOf: configURL),
-              let json = try? JSONDecoder().decode(ConfigFile.self, from: data)
-        else {
-            return [:]
-        }
-        return json.animations ?? [:]
+    public mutating func load() -> [String: String] {
+        configFile?.animations ?? [:]
     }
 
-    public func loadDefaults() -> DefaultsConfig? {
-        guard let data = try? Data(contentsOf: configURL),
-              let json = try? JSONDecoder().decode(ConfigFile.self, from: data)
-        else {
-            return nil
-        }
-        return json.defaults
+    public mutating func loadDefaults() -> DefaultsConfig? {
+        configFile?.defaults
     }
 }
 

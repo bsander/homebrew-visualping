@@ -1,4 +1,4 @@
-// Auto-generated — do not edit. Regenerate from Sources/VisualpingCore/Resources/*.json
+// Auto-generated — do not edit.
 enum EmbeddedAnimations {
     static let animations: [String: String] = [
         "done": doneJSON,

@@ -20,7 +20,7 @@ final class KeywordResolverTests: XCTestCase {
         { "animations": { "done": "/custom/done.json" } }
         """.write(to: configURL, atomically: true, encoding: .utf8)
 
-        let resolver = KeywordResolver(
+        var resolver = KeywordResolver(
             configLoader: ConfigLoader(configURL: configURL)
         )
         let result = resolver.resolve("done")
@@ -29,7 +29,7 @@ final class KeywordResolverTests: XCTestCase {
     }
 
     func testBundledKeywordResolves() {
-        let resolver = KeywordResolver(
+        var resolver = KeywordResolver(
             configLoader: ConfigLoader(configURL: tempDir.appendingPathComponent("missing.json"))
         )
         let result = resolver.resolve("done")
@@ -39,7 +39,7 @@ final class KeywordResolverTests: XCTestCase {
     }
 
     func testUnknownKeywordReturnsNil() {
-        let resolver = KeywordResolver(
+        var resolver = KeywordResolver(
             configLoader: ConfigLoader(configURL: tempDir.appendingPathComponent("missing.json"))
         )
         XCTAssertNil(resolver.resolve("not-a-keyword"))
@@ -51,21 +51,21 @@ final class KeywordResolverTests: XCTestCase {
         { "animations": { "deploy": "/path/to/deploy.json" } }
         """.write(to: configURL, atomically: true, encoding: .utf8)
 
-        let resolver = KeywordResolver(
+        var resolver = KeywordResolver(
             configLoader: ConfigLoader(configURL: configURL)
         )
         XCTAssertEqual(resolver.resolve("deploy"), "/path/to/deploy.json")
     }
 
     func testFilePathSourceReturnsNil() {
-        let resolver = KeywordResolver(
+        var resolver = KeywordResolver(
             configLoader: ConfigLoader(configURL: tempDir.appendingPathComponent("missing.json"))
         )
         XCTAssertNil(resolver.resolve("/path/to/file.json"))
     }
 
     func testURLSourceReturnsNil() {
-        let resolver = KeywordResolver(
+        var resolver = KeywordResolver(
             configLoader: ConfigLoader(configURL: tempDir.appendingPathComponent("missing.json"))
         )
         XCTAssertNil(resolver.resolve("https://example.com/anim.json"))

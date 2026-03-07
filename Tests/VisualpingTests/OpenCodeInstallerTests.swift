@@ -104,10 +104,12 @@ final class OpenCodeInstallerTests: XCTestCase {
         XCTAssertFalse(content.contains("--screen"))
     }
 
-    func testDefaultPluginURLUsesGlobalConfigDir() {
+    func testDefaultInstallerWritesToGlobalConfigDir() throws {
         let installer = OpenCodeInstaller()
         let expected = FileManager.default.homeDirectoryForCurrentUser
             .appendingPathComponent(".config/opencode/plugins/visualping.js")
-        XCTAssertEqual(installer.pluginURL, expected)
+        try installer.install()
+        defer { try? installer.uninstall() }
+        XCTAssertTrue(FileManager.default.fileExists(atPath: expected.path))
     }
 }

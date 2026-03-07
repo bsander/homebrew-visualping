@@ -27,9 +27,9 @@ struct Play: ParsableCommand {
     )
 
     @Argument(help: "Keyword (e.g. done, error, attention), URL, or local file path.")
-    var source: String
+    var animation: String
 
-    @Option(name: .long, help: "Screen position: center, top-left, top-right, bottom-left, bottom-right.")
+    @Option(name: .long, help: "Screen position: center, top-left, top-center, top-right, bottom-left, bottom-center, bottom-right.")
     var position: ScreenPosition?
 
     @Option(name: .long, help: "Animation size in pixels (e.g. 150) or percentage of screen height (e.g. 15%).")
@@ -51,15 +51,16 @@ struct Play: ParsableCommand {
     var fullscreen: Bool?
 
     mutating func validate() throws {
-        if let size { _ = try VisualpingCore.parseSize(size) }
-        if let duration { try VisualpingCore.validateDuration(duration) }
+        if let size { _ = try SizeParser.parse(size) }
+        if let duration { try DurationValidator.validate(duration) }
     }
 
     mutating func run() throws {
         let app = NSApplication.shared
         app.setActivationPolicy(.accessory)
 
-        let config = ConfigLoader().loadDefaults()
+        var loader = ConfigLoader()
+        let config = loader.loadDefaults()
         let defaults = ResolvedDefaults(
             cliPosition: position,
             cliSize: size,
@@ -69,17 +70,17 @@ struct Play: ParsableCommand {
             config: config
         )
 
-        _ = try VisualpingCore.parseSize(defaults.size)
+        let sizeSpec = try SizeParser.parse(defaults.size)
         if let duration = defaults.duration {
-            try VisualpingCore.validateDuration(duration)
+            try DurationValidator.validate(duration)
         }
 
         let resolvedLabel = LabelResolver.resolve(path: path, label: label)
 
         let delegate = AppDelegate(
-            source: source,
+            source: animation,
             position: defaults.position,
-            sizeSpec: try! VisualpingCore.parseSize(defaults.size),
+            sizeSpec: sizeSpec,
             screenTarget: defaults.screen,
             duration: defaults.duration,
             label: resolvedLabel,

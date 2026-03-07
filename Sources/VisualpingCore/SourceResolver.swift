@@ -11,7 +11,7 @@ public enum SourceError: Error, Equatable {
 }
 
 public struct SourceResolver {
-    public let downloader: URLDownloader
+    private let downloader: URLDownloader
 
     public init(downloader: URLDownloader) {
         self.downloader = downloader

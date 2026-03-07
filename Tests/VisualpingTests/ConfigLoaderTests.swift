@@ -26,7 +26,7 @@ final class ConfigLoaderTests: XCTestCase {
         """
         try json.write(to: configURL, atomically: true, encoding: .utf8)
 
-        let loader = ConfigLoader(configURL: configURL)
+        var loader = ConfigLoader(configURL: configURL)
         let animations = loader.load()
 
         XCTAssertEqual(animations["celebrate"], "/path/to/party.json")
@@ -35,7 +35,7 @@ final class ConfigLoaderTests: XCTestCase {
 
     func testMissingFileReturnsEmptyDictionary() {
         let configURL = tempDir.appendingPathComponent("nonexistent.json")
-        let loader = ConfigLoader(configURL: configURL)
+        var loader = ConfigLoader(configURL: configURL)
         let animations = loader.load()
         XCTAssertTrue(animations.isEmpty)
     }
@@ -44,7 +44,7 @@ final class ConfigLoaderTests: XCTestCase {
         let configURL = tempDir.appendingPathComponent("config.json")
         try "not json".write(to: configURL, atomically: true, encoding: .utf8)
 
-        let loader = ConfigLoader(configURL: configURL)
+        var loader = ConfigLoader(configURL: configURL)
         let animations = loader.load()
         XCTAssertTrue(animations.isEmpty)
     }
@@ -55,7 +55,7 @@ final class ConfigLoaderTests: XCTestCase {
         { "animations": {} }
         """.write(to: configURL, atomically: true, encoding: .utf8)
 
-        let loader = ConfigLoader(configURL: configURL)
+        var loader = ConfigLoader(configURL: configURL)
         let animations = loader.load()
         XCTAssertTrue(animations.isEmpty)
     }
@@ -78,7 +78,7 @@ final class ConfigLoaderTests: XCTestCase {
         """
         try json.write(to: configURL, atomically: true, encoding: .utf8)
 
-        let loader = ConfigLoader(configURL: configURL)
+        var loader = ConfigLoader(configURL: configURL)
         let defaults = loader.loadDefaults()
 
         XCTAssertEqual(defaults?.position, "top-right")
@@ -94,7 +94,7 @@ final class ConfigLoaderTests: XCTestCase {
         { "animations": { "done": "/path/to/done.json" } }
         """.write(to: configURL, atomically: true, encoding: .utf8)
 
-        let loader = ConfigLoader(configURL: configURL)
+        var loader = ConfigLoader(configURL: configURL)
         XCTAssertNil(loader.loadDefaults())
     }
 
@@ -111,7 +111,7 @@ final class ConfigLoaderTests: XCTestCase {
         """
         try json.write(to: configURL, atomically: true, encoding: .utf8)
 
-        let loader = ConfigLoader(configURL: configURL)
+        var loader = ConfigLoader(configURL: configURL)
         let defaults = loader.loadDefaults()
 
         XCTAssertEqual(defaults?.position, "center")
@@ -132,7 +132,7 @@ final class ConfigLoaderTests: XCTestCase {
         """
         try json.write(to: configURL, atomically: true, encoding: .utf8)
 
-        let loader = ConfigLoader(configURL: configURL)
+        var loader = ConfigLoader(configURL: configURL)
         let animations = loader.load()
         XCTAssertEqual(animations["celebrate"], "/path/to/party.json")
         XCTAssertNil(loader.loadDefaults())

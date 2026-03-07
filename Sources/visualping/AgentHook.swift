@@ -1,7 +1,7 @@
 import ArgumentParser
 import VisualpingCore
 
-extension AgentTool: ExpressibleByArgument {}
+extension AgentTarget: ExpressibleByArgument {}
 
 struct AgentHook: ParsableCommand {
     static let configuration = CommandConfiguration(
@@ -10,7 +10,7 @@ struct AgentHook: ParsableCommand {
     )
 
     @Argument(help: "Agent tool to configure: claude, opencode.")
-    var tool: AgentTool
+    var tool: AgentTarget
 
     @Flag(name: .long, help: "Remove previously installed hooks.")
     var uninstall = false

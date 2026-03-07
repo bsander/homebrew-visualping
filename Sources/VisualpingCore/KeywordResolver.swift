@@ -1,7 +1,7 @@
 import Foundation
 
 public struct KeywordResolver {
-    private let configLoader: ConfigLoader
+    private var configLoader: ConfigLoader
 
     public init(configLoader: ConfigLoader = ConfigLoader()) {
         self.configLoader = configLoader
@@ -9,7 +9,7 @@ public struct KeywordResolver {
 
     /// Resolves a keyword to an animation source string (file path or URL).
     /// Returns nil if the source is not a keyword (i.e., it's already a path or URL).
-    public func resolve(_ source: String) -> String? {
+    public mutating func resolve(_ source: String) -> String? {
         // Skip sources that look like file paths or URLs
         if source.contains("/") || source.contains("\\") ||
            source.hasPrefix("http://") || source.hasPrefix("https://") {

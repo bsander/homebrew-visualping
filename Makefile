@@ -2,10 +2,13 @@ PREFIX ?= /usr/local
 BINARY_NAME = visualping
 BUILD_DIR = .build/universal
 
-.PHONY: build release install dev uninstall clean help
+.PHONY: build test release install dev uninstall clean help
 
 build: ## Build debug binary
 	swift build --disable-sandbox
+
+test: ## Run tests
+	swift test --disable-sandbox
 
 release: ## Build universal release binary (CI)
 	swift build -c release --disable-sandbox --arch arm64

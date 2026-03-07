@@ -2,32 +2,6 @@ import AppKit
 import Lottie
 import VisualpingCore
 
-struct URLSessionDownloader: URLDownloader {
-    func download(from url: URL, completion: @escaping (Result<URL, Error>) -> Void) {
-        let task = URLSession.shared.downloadTask(with: url) { tempURL, _, error in
-            if let error {
-                completion(.failure(error))
-                return
-            }
-            guard let tempURL else {
-                completion(.failure(URLError(.badServerResponse)))
-                return
-            }
-            let ext = url.pathExtension.isEmpty ? "json" : url.pathExtension
-            let dest = FileManager.default.temporaryDirectory
-                .appendingPathComponent(UUID().uuidString)
-                .appendingPathExtension(ext)
-            do {
-                try FileManager.default.moveItem(at: tempURL, to: dest)
-                completion(.success(dest))
-            } catch {
-                completion(.failure(error))
-            }
-        }
-        task.resume()
-    }
-}
-
 class AppDelegate: NSObject, NSApplicationDelegate {
     let source: String
     let position: ScreenPosition
@@ -40,9 +14,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var windows: [NSWindow] = []
     private var completionCount = 0
     private var totalAnimations = 0
-    private var tempFileURL: URL?
     private let sourceResolver: SourceResolver
-    private let keywordResolver = KeywordResolver()
+    private var keywordResolver = KeywordResolver()
 
     init(source: String, position: ScreenPosition, sizeSpec: SizeSpec, screenTarget: ScreenTarget = .main, duration: Double? = nil, label: String? = nil, fullscreen: Bool = false) {
         self.source = source
@@ -53,12 +26,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         self.label = label
         self.fullscreen = fullscreen
         self.sourceResolver = SourceResolver(downloader: URLSessionDownloader())
-    }
-
-    func applicationWillTerminate(_ notification: Notification) {
-        if let url = tempFileURL {
-            try? FileManager.default.removeItem(at: url)
-        }
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -74,17 +41,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             let cache = AnimationCache()
             if cache.isCached(urlString: resolvedSource) {
                 let cachedPath = cache.cachedPath(for: resolvedSource)
-                DispatchQueue.main.async {
-                    self.showAnimation(from: cachedPath)
-                }
+                showAnimation(from: cachedPath)
             } else {
                 resolveAndCacheSource(resolvedSource, cache: cache)
             }
         } else if resolvedSource != source {
-            // Keyword resolved to a local file path
-            DispatchQueue.main.async {
-                self.showAnimation(from: resolvedSource)
-            }
+            showAnimation(from: resolvedSource)
         } else {
             // Not a keyword — use existing resolution flow
             resolveSource { [weak self] filePath in
@@ -99,12 +61,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: - Source Resolution
 
     private func resolveSource(completion: @escaping (String) -> Void) {
-        sourceResolver.resolve(source) { [weak self] result in
+        sourceResolver.resolve(source) { result in
             switch result {
             case .success(let path):
-                if self?.source.hasPrefix("https") == true {
-                    self?.tempFileURL = URL(fileURLWithPath: path)
-                }
                 completion(path)
             case .failure(let error):
                 fputs("Error: \(error)\n", stderr)
@@ -204,10 +163,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func setupWindow(with animationView: LottieAnimationView, on screen: NSScreen) {
         let frame: CGRect
         if fullscreen {
-            frame = VisualpingCore.calculateFullscreenFrame(in: screen.frame)
+            frame = screen.frame
         } else {
             let size = resolveSize(for: screen)
-            frame = VisualpingCore.calculateWindowFrame(
+            frame = WindowFrame.calculate(
                 in: screen.visibleFrame,
                 position: position,
                 size: size

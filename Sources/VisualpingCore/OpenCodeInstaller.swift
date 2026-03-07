@@ -1,7 +1,7 @@
 import Foundation
 
 public struct OpenCodeInstaller {
-    let pluginURL: URL
+    private let pluginURL: URL
 
     public init(pluginURL: URL? = nil) {
         if let pluginURL {
