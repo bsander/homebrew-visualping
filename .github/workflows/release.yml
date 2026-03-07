@@ -3,8 +3,6 @@ name: Release
 on:
   push:
     branches: [main]
-    paths-ignore:
-      - 'Formula/**'
 
 permissions:
   contents: write
@@ -68,20 +66,20 @@ jobs:
             "visualping-${TAG}.tar.gz" \
             --generate-notes
 
-      - name: Update formula
+      - name: Update formula on brew branch
         run: |
           TAG="${{ steps.version.outputs.tag }}"
           SHA256=$(shasum -a 256 "visualping-${TAG}-macos.tar.gz" | awk '{print $1}')
           ASSET_URL="https://github.com/${{ github.repository }}/releases/download/${TAG}/visualping-${TAG}-macos.tar.gz"
           VERSION="${TAG#v}"
+          BREW_DIR=$(mktemp -d)
+          git clone --branch brew --single-branch "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" "$BREW_DIR"
+          cd "$BREW_DIR"
           sed -i '' "s|url \".*\"|url \"${ASSET_URL}\"|" Formula/visualping.rb
           sed -i '' "s|version \".*\"|version \"${VERSION}\"|" Formula/visualping.rb
           sed -i '' "s|sha256 \".*\"|sha256 \"${SHA256}\"|" Formula/visualping.rb
-
-      - name: Commit and push formula
-        run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add Formula/visualping.rb
-          git commit -m "Update formula for ${{ steps.version.outputs.tag }} [skip ci]"
-          git push origin main
+          git commit -m "Update formula for ${TAG}"
+          git push origin brew
