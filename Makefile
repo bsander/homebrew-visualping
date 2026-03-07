@@ -1,6 +1,6 @@
 PREFIX ?= /usr/local
 BINARY_NAME = visualping
-BUILD_DIR = .build/apple/Products/Release
+BUILD_DIR = .build/universal
 
 .PHONY: build release install dev uninstall clean help
 
@@ -8,7 +8,13 @@ build: ## Build debug binary
 	swift build --disable-sandbox
 
 release: ## Build universal release binary (CI)
-	swift build -c release --disable-sandbox --arch arm64 --arch x86_64
+	swift build -c release --disable-sandbox --arch arm64
+	swift build -c release --disable-sandbox --arch x86_64
+	mkdir -p .build/universal
+	lipo -create \
+		.build/arm64-apple-macosx/release/visualping \
+		.build/x86_64-apple-macosx/release/visualping \
+		-output .build/universal/visualping
 
 install: release ## Copy binary to PREFIX/bin (used by Homebrew)
 	install -d $(PREFIX)/bin

@@ -17,9 +17,6 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Select Xcode 16.3
-        run: sudo xcode-select -s /Applications/Xcode_16.3.app
-
       - name: Build
         run: make release
 
@@ -53,7 +50,7 @@ jobs:
         run: |
           TAG="${{ steps.version.outputs.tag }}"
           STAGING=$(mktemp -d)
-          cp .build/apple/Products/Release/visualping "$STAGING/"
+          cp .build/universal/visualping "$STAGING/"
           tar -czf "visualping-${TAG}-macos.tar.gz" -C "$STAGING" visualping
 
       - name: Create GitHub Release
@@ -80,6 +77,8 @@ jobs:
           sed -i '' "s|sha256 \".*\"|sha256 \"${SHA256}\"|" Formula/visualping.rb
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add Formula/visualping.rb
+          NOTICE='> **Note:** This is the Homebrew tap branch. Source code and development happens on the [`main` branch](https://github.com/${{ github.repository }}/tree/main).\n'
+          printf '%b\n%s\n' "$NOTICE" "$(cat "$GITHUB_WORKSPACE/README.md")" > README.md
+          git add Formula/visualping.rb README.md
           git commit -m "Update formula for ${TAG}"
           git push origin brew
