@@ -51,10 +51,10 @@ visualping <source> [options]
 | Argument | Description | Default |
 |----------|-------------|---------|
 | `source` | Keyword, URL, or local file path to a `.json` or `.lottie` animation | *(required)* |
-| `--position` | Screen position (see below) | `bottom-center` |
+| `--position` | Screen position (see below) | `top-right` |
 | `--size` | Animation size in pixels (e.g. `150`) or percentage of screen height (e.g. `15%`) | `10%` |
 | `--screen` | Target screen: `main`, `all`, or a 1-based index (e.g. `2`) | `main` |
-| `--duration` | Animation duration in seconds | `1.5` |
+| `--duration` | Animation duration in seconds | native length |
 | `--label` | Text label displayed on a pill at the bottom of the animation | — |
 | `--path` | Path whose last component is displayed as the label | — |
 
@@ -116,6 +116,29 @@ Add custom keyword mappings in `~/.config/visualping/config.json`:
 
 Config entries override built-in keywords. URL sources are cached in `~/.config/visualping/cache/`.
 
+### Default Settings
+
+Set persistent defaults in `~/.config/visualping/config.json` under a `"defaults"` key. All fields are optional — missing fields use hardcoded defaults.
+
+```json
+{
+  "animations": {
+    "deploy": "/path/to/deploy-animation.json"
+  },
+  "defaults": {
+    "position": "top-right",
+    "size": "15%",
+    "screen": "all",
+    "duration": 2.0,
+    "fullscreen": false
+  }
+}
+```
+
+**Priority chain:** CLI flag > config file > hardcoded default
+
+For example, with the config above, `visualping done` uses `top-right` position and `all` screens, while `visualping done --position center` overrides position to `center` but keeps the other config values.
+
 ## Agent Hook Integration
 
 The `agent-hook` subcommand installs or removes visualping hooks for AI coding tools, so you get visual notifications on tool events:
@@ -131,6 +154,8 @@ visualping agent-hook opencode
 visualping agent-hook claude --uninstall
 visualping agent-hook opencode --uninstall
 ```
+
+Agent hooks use your config file defaults for position, screen, size, and duration — no need to hardcode these in hook commands.
 
 ## Dependencies
 
