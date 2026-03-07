@@ -122,7 +122,7 @@ final class ClaudeCodeInstallerTests: XCTestCase {
         XCTAssertNoThrow(try installer.uninstall())
     }
 
-    func testInstalledHooksIncludeLabel() throws {
+    func testInstalledHooksDoNotShellExpandEnvVars() throws {
         try installer.install()
 
         let data = try Data(contentsOf: settingsURL)
@@ -133,11 +133,27 @@ final class ClaudeCodeInstallerTests: XCTestCase {
             let eventArray = hooks[event] as! [[String: Any]]
             let innerHooks = eventArray[0]["hooks"] as! [[String: Any]]
             let command = innerHooks[0]["command"] as! String
-            XCTAssertTrue(
-                command.contains("--path"),
-                "\(event) hook should include --path flag, got: \(command)"
+            XCTAssertFalse(
+                command.contains("$"),
+                "\(event) hook should not shell-expand env vars, got: \(command)"
             )
         }
+    }
+
+    func testInstalledHooksAreSimpleCommands() throws {
+        try installer.install()
+
+        let data = try Data(contentsOf: settingsURL)
+        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        let hooks = json["hooks"] as! [String: Any]
+
+        let stopArray = hooks["Stop"] as! [[String: Any]]
+        let stopHooks = stopArray[0]["hooks"] as! [[String: Any]]
+        XCTAssertEqual(stopHooks[0]["command"] as? String, "visualping done")
+
+        let notifArray = hooks["Notification"] as! [[String: Any]]
+        let notifHooks = notifArray[0]["hooks"] as! [[String: Any]]
+        XCTAssertEqual(notifHooks[0]["command"] as? String, "visualping attention")
     }
 
     func testInstallUpdatesExistingVisualpingHooks() throws {
@@ -155,8 +171,7 @@ final class ClaudeCodeInstallerTests: XCTestCase {
         XCTAssertEqual(stopArray.count, 1, "Should replace, not duplicate")
         let innerHooks = stopArray[0]["hooks"] as! [[String: Any]]
         let command = innerHooks[0]["command"] as! String
-        XCTAssertTrue(command.contains("--path"), "Should update to --path, got: \(command)")
-        XCTAssertFalse(command.contains("--label"), "Should not contain old --label flag")
+        XCTAssertEqual(command, "visualping done", "Should update to latest command format")
     }
 
     func testInstalledHooksOmitPositionAndScreen() throws {

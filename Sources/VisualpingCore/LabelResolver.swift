@@ -1,12 +1,10 @@
 import Foundation
 
 public enum LabelResolver {
-    public static func resolve(path: String?, label: String?) -> String? {
-        let pathComponent: String? = path.map {
-            URL(fileURLWithPath: $0).lastPathComponent
-        }
+    public static func resolve(label: String?) -> String? {
+        let project = detectProjectName()
 
-        switch (pathComponent, label) {
+        switch (project, label) {
         case let (p?, l?):
             return "\(p): \(l)"
         case let (p?, nil):
@@ -16,5 +14,11 @@ public enum LabelResolver {
         case (nil, nil):
             return nil
         }
+    }
+
+    private static func detectProjectName() -> String? {
+        let cwd = FileManager.default.currentDirectoryPath
+        let name = URL(fileURLWithPath: cwd).lastPathComponent
+        return name.isEmpty ? nil : name
     }
 }

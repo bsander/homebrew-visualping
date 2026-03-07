@@ -35,15 +35,13 @@ visualping <animation> [options]
 | Argument | Description | Default |
 |----------|-------------|---------|
 | `animation` | Keyword, URL, or local file path to a `.json` or `.lottie` animation | *(required)* |
-| `--position` | Screen position (see below) | `top-right` |
+| `--position` | Screen position | `top-right` |
 | `--size` | Animation size in pixels (e.g. `150`) or percentage of screen height (e.g. `15%`) | `10%` |
 | `--screen` | Target screen: `main`, `all`, or a 1-based index (e.g. `2`) | `main` |
 | `--duration` | Animation duration in seconds | native length |
 | `--label` | Text label displayed on a pill at the bottom of the animation | — |
 | `--path` | Path whose last component is displayed as the label | — |
 | `--fullscreen` | Fill the entire screen with the animation (use `--no-fullscreen` to disable) | `false` |
-
-**Positions:** `center`, `top-left`, `top-center`, `top-right`, `bottom-left`, `bottom-center`, `bottom-right`
 
 ### Examples
 

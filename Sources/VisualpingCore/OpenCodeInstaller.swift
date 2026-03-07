@@ -14,6 +14,7 @@ public struct OpenCodeInstaller {
 
     private static let pluginContent = """
     export const VisualpingPlugin = async ({ $ }) => {
+      const sanitize = (s) => s.replace(/[^a-zA-Z0-9 _.:\\-\\/]/g, "")
       const titles = new Map()
       return {
         event: async ({ event }) => {
@@ -26,8 +27,7 @@ public struct OpenCodeInstaller {
           }
           const sessionID = event.properties?.sessionID ?? event.properties?.info?.id
           const title = sessionID ? titles.get(sessionID) : undefined
-          const args = ["--path", process.cwd()]
-          if (title) args.push("--label", title)
+          const args = title ? ["--label", sanitize(title)] : []
           if (event.type === "session.idle") {
             await $`visualping done ${args}`
           } else if (event.type === "session.error") {

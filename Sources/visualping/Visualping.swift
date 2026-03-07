@@ -44,9 +44,6 @@ struct Play: ParsableCommand {
     @Option(name: .long, help: "Text label displayed on a pill at the bottom of the animation.")
     var label: String?
 
-    @Option(name: .long, help: "Path whose last component is displayed as the label.")
-    var path: String?
-
     @Flag(name: .long, inversion: .prefixedNo, help: "Fill the entire screen.")
     var fullscreen: Bool?
 
@@ -75,7 +72,7 @@ struct Play: ParsableCommand {
             try DurationValidator.validate(duration)
         }
 
-        let resolvedLabel = LabelResolver.resolve(path: path, label: label)
+        let resolvedLabel = LabelResolver.resolve(label: label)
 
         let delegate = AppDelegate(
             source: animation,

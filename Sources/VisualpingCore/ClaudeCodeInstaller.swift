@@ -28,8 +28,8 @@ public struct ClaudeCodeInstaller {
         var hooks = settings["hooks"] as? [String: Any] ?? [:]
 
         let hookDefinitions: [(event: String, command: String)] = [
-            ("Stop", "visualping done --path \"$CLAUDE_PROJECT_DIR\""),
-            ("Notification", "visualping attention --path \"$CLAUDE_PROJECT_DIR\""),
+            ("Stop", "visualping done"),
+            ("Notification", "visualping attention"),
         ]
 
         for def in hookDefinitions {

@@ -78,10 +78,10 @@ final class OpenCodeInstallerTests: XCTestCase {
         XCTAssertTrue(content.contains("title"))
     }
 
-    func testInstallContentUsesPathAndLabel() throws {
+    func testInstallContentUsesLabelOnly() throws {
         try installer.install()
         let content = try String(contentsOf: pluginURL, encoding: .utf8)
-        XCTAssertTrue(content.contains("--path"))
+        XCTAssertFalse(content.contains("--path"))
         XCTAssertTrue(content.contains("--label"))
     }
 
@@ -95,6 +95,15 @@ final class OpenCodeInstallerTests: XCTestCase {
         try installer.install()
         let content = try String(contentsOf: pluginURL, encoding: .utf8)
         XCTAssertTrue(content.contains("visualping error"))
+    }
+
+    func testInstallContentSanitizesTitle() throws {
+        try installer.install()
+        let content = try String(contentsOf: pluginURL, encoding: .utf8)
+        XCTAssertTrue(
+            content.contains("sanitize"),
+            "Plugin should sanitize session title before passing to shell"
+        )
     }
 
     func testInstallContentOmitsPositionAndScreen() throws {
