@@ -159,6 +159,28 @@ final class ClaudeCodeInstallerTests: XCTestCase {
         XCTAssertFalse(command.contains("--label"), "Should not contain old --label flag")
     }
 
+    func testInstalledHooksOmitPositionAndScreen() throws {
+        try installer.install()
+
+        let data = try Data(contentsOf: settingsURL)
+        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        let hooks = json["hooks"] as! [String: Any]
+
+        for event in ["Stop", "Notification"] {
+            let eventArray = hooks[event] as! [[String: Any]]
+            let innerHooks = eventArray[0]["hooks"] as! [[String: Any]]
+            let command = innerHooks[0]["command"] as! String
+            XCTAssertFalse(
+                command.contains("--position"),
+                "\(event) hook should not include --position, got: \(command)"
+            )
+            XCTAssertFalse(
+                command.contains("--screen"),
+                "\(event) hook should not include --screen, got: \(command)"
+            )
+        }
+    }
+
     func testUninstallNoopsWhenNoVisualpingHooks() throws {
         let existing = """
         {"hooks":{"Stop":[{"matcher":"","hooks":[{"type":"command","command":"echo hi"}]}]}}

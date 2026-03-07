@@ -97,6 +97,13 @@ final class OpenCodeInstallerTests: XCTestCase {
         XCTAssertTrue(content.contains("visualping error"))
     }
 
+    func testInstallContentOmitsPositionAndScreen() throws {
+        try installer.install()
+        let content = try String(contentsOf: pluginURL, encoding: .utf8)
+        XCTAssertFalse(content.contains("--position"))
+        XCTAssertFalse(content.contains("--screen"))
+    }
+
     func testDefaultPluginURLUsesGlobalConfigDir() {
         let installer = OpenCodeInstaller()
         let expected = FileManager.default.homeDirectoryForCurrentUser

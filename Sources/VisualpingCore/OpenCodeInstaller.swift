@@ -26,7 +26,7 @@ public struct OpenCodeInstaller {
           }
           const sessionID = event.properties?.sessionID ?? event.properties?.info?.id
           const title = sessionID ? titles.get(sessionID) : undefined
-          const args = ["--position", "bottom-center", "--screen", "all", "--path", process.cwd()]
+          const args = ["--path", process.cwd()]
           if (title) args.push("--label", title)
           if (event.type === "session.idle") {
             await $`visualping done ${args}`
