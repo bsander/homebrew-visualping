@@ -6,11 +6,10 @@ class Visualping < Formula
   sha256 "ddb915ea120f908bc6b903259cd026ea472a5c9df5c6d16a4cbfcafdfd5d0b87"
   license "MIT"
 
-  depends_on xcode: ["15.0", :build]
   depends_on :macos
 
   def install
-    system "make", "install", "PREFIX=#{prefix}"
+    bin.install "visualping"
   end
 
   test do

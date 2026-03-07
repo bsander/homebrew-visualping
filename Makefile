@@ -1,14 +1,14 @@
 PREFIX ?= /usr/local
 BINARY_NAME = visualping
-BUILD_DIR = .build/release
+BUILD_DIR = .build/apple/Products/Release
 
 .PHONY: build release install dev uninstall clean help
 
 build: ## Build debug binary
 	swift build --disable-sandbox
 
-release: ## Build release binary (CI)
-	swift build -c release --disable-sandbox
+release: ## Build universal release binary (CI)
+	swift build -c release --disable-sandbox --arch arm64 --arch x86_64
 
 install: release ## Copy binary to PREFIX/bin (used by Homebrew)
 	install -d $(PREFIX)/bin

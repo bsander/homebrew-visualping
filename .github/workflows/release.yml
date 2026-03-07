@@ -20,7 +20,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build
-        run: swift build -c release
+        run: make release
 
       - name: Test
         run: swift test
@@ -48,18 +48,28 @@ jobs:
           TAG="${{ steps.version.outputs.tag }}"
           git archive --format=tar.gz --prefix="visualping-${TAG}/" "$TAG" -o "visualping-${TAG}.tar.gz"
 
+      - name: Create binary tarball
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          STAGING=$(mktemp -d)
+          cp .build/apple/Products/Release/visualping "$STAGING/"
+          tar -czf "visualping-${TAG}-macos.tar.gz" -C "$STAGING" visualping
+
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG="${{ steps.version.outputs.tag }}"
-          gh release create "$TAG" "visualping-${TAG}.tar.gz" --generate-notes
+          gh release create "$TAG" \
+            "visualping-${TAG}-macos.tar.gz" \
+            "visualping-${TAG}.tar.gz" \
+            --generate-notes
 
       - name: Update formula
         run: |
           TAG="${{ steps.version.outputs.tag }}"
-          SHA256=$(shasum -a 256 "visualping-${TAG}.tar.gz" | awk '{print $1}')
-          ASSET_URL="https://github.com/${{ github.repository }}/releases/download/${TAG}/visualping-${TAG}.tar.gz"
+          SHA256=$(shasum -a 256 "visualping-${TAG}-macos.tar.gz" | awk '{print $1}')
+          ASSET_URL="https://github.com/${{ github.repository }}/releases/download/${TAG}/visualping-${TAG}-macos.tar.gz"
           VERSION="${TAG#v}"
           sed -i '' "s|url \".*\"|url \"${ASSET_URL}\"|" Formula/visualping.rb
           sed -i '' "s|version \".*\"|version \"${VERSION}\"|" Formula/visualping.rb
