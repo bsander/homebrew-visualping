@@ -1,5 +1,7 @@
 # visualping
 
+macOS CLI that plays Lottie animations as transparent, click-through desktop overlays.
+
 ## Conventions
 
 - Always use TDD: write failing tests in `VisualpingTests` before writing implementation code.
