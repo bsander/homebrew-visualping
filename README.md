@@ -1,6 +1,6 @@
 # visualping
 
-<video src="assets/demo.mp4" autoplay loop muted playsinline width="600"></video>
+<img src="assets/demo.gif" alt="visualping demo" width="600">
 
 A macOS CLI tool that displays Lottie animations as transparent, click-through desktop overlays. Play an animation once and exit — perfect for non-intrusive visual notifications.
 
