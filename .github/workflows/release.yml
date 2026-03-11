@@ -78,6 +78,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           NOTICE='> **Note:** This is the Homebrew tap branch. Source code and development happens on the [`main` branch](https://github.com/${{ github.repository }}/tree/main).\n'
+          rm -rf "$BREW_DIR/assets"
           cp -r "$GITHUB_WORKSPACE/assets" "$BREW_DIR/assets"
           printf '%b\n%s\n' "$NOTICE" "$(cat "$GITHUB_WORKSPACE/README.md")" > README.md
           git add Formula/visualping.rb README.md assets/
