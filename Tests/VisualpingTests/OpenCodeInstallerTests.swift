@@ -78,10 +78,10 @@ final class OpenCodeInstallerTests: XCTestCase {
         XCTAssertTrue(content.contains("title"))
     }
 
-    func testInstallContentUsesLabelOnly() throws {
+    func testInstallContentUsesPathAndLabel() throws {
         try installer.install()
         let content = try String(contentsOf: pluginURL, encoding: .utf8)
-        XCTAssertFalse(content.contains("--path"))
+        XCTAssertTrue(content.contains("--path"))
         XCTAssertTrue(content.contains("--label"))
     }
 

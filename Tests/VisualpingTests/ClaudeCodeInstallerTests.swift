@@ -149,11 +149,11 @@ final class ClaudeCodeInstallerTests: XCTestCase {
 
         let stopArray = hooks["Stop"] as! [[String: Any]]
         let stopHooks = stopArray[0]["hooks"] as! [[String: Any]]
-        XCTAssertEqual(stopHooks[0]["command"] as? String, "visualping done")
+        XCTAssertEqual(stopHooks[0]["command"] as? String, "visualping done --path .")
 
         let notifArray = hooks["Notification"] as! [[String: Any]]
         let notifHooks = notifArray[0]["hooks"] as! [[String: Any]]
-        XCTAssertEqual(notifHooks[0]["command"] as? String, "visualping attention")
+        XCTAssertEqual(notifHooks[0]["command"] as? String, "visualping attention --path .")
     }
 
     func testInstallUpdatesExistingVisualpingHooks() throws {
@@ -171,7 +171,7 @@ final class ClaudeCodeInstallerTests: XCTestCase {
         XCTAssertEqual(stopArray.count, 1, "Should replace, not duplicate")
         let innerHooks = stopArray[0]["hooks"] as! [[String: Any]]
         let command = innerHooks[0]["command"] as! String
-        XCTAssertEqual(command, "visualping done", "Should update to latest command format")
+        XCTAssertEqual(command, "visualping done --path .", "Should update to latest command format")
     }
 
     func testInstalledHooksOmitPositionAndScreen() throws {
