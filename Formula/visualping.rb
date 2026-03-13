@@ -1,9 +1,9 @@
 class Visualping < Formula
   desc "macOS CLI tool that displays Lottie animations as transparent desktop overlays"
   homepage "https://github.com/bsander/homebrew-visualping"
-  url "https://github.com/bsander/homebrew-visualping/releases/download/v0.2026.0313/visualping-v0.2026.0313-macos.tar.gz"
-  version "0.2026.0313"
-  sha256 "de04ceaaba6859d44469561fe25261037397c2359743eb80b0c1a722b471617b"
+  url "https://github.com/bsander/homebrew-visualping/releases/download/v0.2026.0313.1/visualping-v0.2026.0313.1-macos.tar.gz"
+  version "0.2026.0313.1"
+  sha256 "ce0818449815468b423e3a6e609d143926cf8a0a5b52febf51a2d30cf7b704c4"
   license "MIT"
 
   depends_on :macos
