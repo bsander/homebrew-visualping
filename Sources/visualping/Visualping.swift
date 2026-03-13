@@ -4,6 +4,7 @@ import Lottie
 import VisualpingCore
 
 extension ScreenPosition: ExpressibleByArgument {}
+extension PathStyle: ExpressibleByArgument {}
 
 extension ScreenTarget: ExpressibleByArgument {
     public init?(argument: String) {
@@ -44,6 +45,12 @@ struct Play: ParsableCommand {
     @Option(name: .long, help: "Text label displayed on a pill at the bottom of the animation.")
     var label: String?
 
+    @Option(name: .long, help: "Path to display in the label pill. Use '.' for current directory.")
+    var path: String?
+
+    @Option(name: .long, help: "Path display style: short (last directory, default) or full.")
+    var pathStyle: PathStyle?
+
     @Flag(name: .long, inversion: .prefixedNo, help: "Fill the entire screen.")
     var fullscreen: Bool?
 
@@ -72,7 +79,7 @@ struct Play: ParsableCommand {
             try DurationValidator.validate(duration)
         }
 
-        let resolvedLabel = LabelResolver.resolve(label: label)
+        let resolvedLabel = LabelResolver.resolve(path: path, pathStyle: pathStyle ?? .short, label: label)
 
         let delegate = AppDelegate(
             source: animation,

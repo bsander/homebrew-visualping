@@ -1,24 +1,18 @@
 import Foundation
 
 public enum LabelResolver {
-    public static func resolve(label: String?) -> String? {
-        let project = detectProjectName()
-
-        switch (project, label) {
-        case let (p?, l?):
-            return "\(p): \(l)"
-        case let (p?, nil):
-            return p
-        case let (nil, l?):
-            return l
-        case (nil, nil):
-            return nil
+    public static func resolve(path: String?, pathStyle: PathStyle, label: String?) -> String? {
+        let resolvedPath: String? = path.flatMap { p in
+            let fullPath = (p == ".") ? FileManager.default.currentDirectoryPath : p
+            switch pathStyle {
+            case .short:
+                return URL(fileURLWithPath: fullPath).lastPathComponent
+            case .full:
+                return fullPath
+            }
         }
-    }
 
-    private static func detectProjectName() -> String? {
-        let cwd = FileManager.default.currentDirectoryPath
-        let name = URL(fileURLWithPath: cwd).lastPathComponent
-        return name.isEmpty ? nil : name
+        let parts = [resolvedPath, label].compactMap { $0 }
+        return parts.isEmpty ? nil : parts.joined(separator: ": ")
     }
 }
