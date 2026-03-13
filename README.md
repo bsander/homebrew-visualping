@@ -44,7 +44,8 @@ visualping <animation> [options]
 | `--screen` | Target screen: `main`, `all`, or a 1-based index (e.g. `2`) | `main` |
 | `--duration` | Animation duration in seconds | native length |
 | `--label` | Text label displayed on a pill at the bottom of the animation | — |
-| `--path` | Path whose last component is displayed as the label | — |
+| `--path` | Path to display in the label pill (use `.` for current directory) | — |
+| `--path-style` | Path display style: `short` (last directory) or `full` | `short` |
 | `--fullscreen` | Fill the entire screen with the animation (use `--no-fullscreen` to disable) | `false` |
 
 ### Examples
@@ -53,8 +54,8 @@ visualping <animation> [options]
 # Play a keyword animation with options
 visualping done --position center --size 200 --duration 3
 
-# Play a local file with a label
-visualping animation.json --label "Build passed"
+# Show project name and label
+visualping done --path . --label "Build passed"
 
 # Play fullscreen on all screens
 visualping done --screen all --fullscreen
