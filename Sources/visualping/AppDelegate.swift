@@ -201,8 +201,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func addLabelOverlay(to window: NSWindow) {
         guard let label, !label.isEmpty, let contentView = window.contentView else { return }
 
+        let metrics = LabelMetrics(windowHeight: window.frame.height)
+
         let textField = NSTextField(labelWithString: label)
-        textField.font = NSFont.systemFont(ofSize: 13, weight: .semibold)
+        textField.font = NSFont.systemFont(ofSize: metrics.fontSize, weight: .semibold)
         textField.textColor = .white
         textField.alignment = .center
         textField.lineBreakMode = .byTruncatingMiddle
@@ -212,23 +214,23 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let pill = NSView()
         pill.wantsLayer = true
         pill.layer?.backgroundColor = NSColor.black.withAlphaComponent(0.6).cgColor
-        pill.layer?.cornerRadius = 12
+        pill.layer?.cornerRadius = metrics.cornerRadius
         pill.layer?.masksToBounds = true
         pill.translatesAutoresizingMaskIntoConstraints = false
         pill.addSubview(textField)
         NSLayoutConstraint.activate([
-            textField.leadingAnchor.constraint(equalTo: pill.leadingAnchor, constant: 10),
-            textField.trailingAnchor.constraint(equalTo: pill.trailingAnchor, constant: -10),
-            textField.topAnchor.constraint(equalTo: pill.topAnchor, constant: 5),
-            textField.bottomAnchor.constraint(equalTo: pill.bottomAnchor, constant: -5),
+            textField.leadingAnchor.constraint(equalTo: pill.leadingAnchor, constant: metrics.hPadding),
+            textField.trailingAnchor.constraint(equalTo: pill.trailingAnchor, constant: -metrics.hPadding),
+            textField.topAnchor.constraint(equalTo: pill.topAnchor, constant: metrics.vPadding),
+            textField.bottomAnchor.constraint(equalTo: pill.bottomAnchor, constant: -metrics.vPadding),
         ])
 
         contentView.addSubview(pill)
 
         NSLayoutConstraint.activate([
             pill.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            pill.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -4),
-            pill.widthAnchor.constraint(lessThanOrEqualTo: contentView.widthAnchor, constant: -16),
+            pill.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -metrics.bottomMargin),
+            pill.widthAnchor.constraint(lessThanOrEqualTo: contentView.widthAnchor, constant: -metrics.maxWidthInset),
         ])
     }
 
