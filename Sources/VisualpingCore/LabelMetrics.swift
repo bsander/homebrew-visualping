@@ -13,7 +13,7 @@ public struct LabelMetrics {
 
     public init(windowHeight: CGFloat) {
         let scale = min(max(windowHeight / Self.referenceHeight, Self.scaleRange.lowerBound), Self.scaleRange.upperBound)
-        self.fontSize = 13 * scale
+        self.fontSize = 16 * scale
         self.hPadding = 10 * scale
         self.vPadding = 5 * scale
         self.cornerRadius = 12 * scale

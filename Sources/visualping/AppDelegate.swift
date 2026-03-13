@@ -193,22 +193,22 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.contentView = animationView
         window.orderFrontRegardless()
 
-        addLabelOverlay(to: window)
+        addLabelOverlay(to: window, on: screen)
 
         windows.append(window)
     }
 
-    private func addLabelOverlay(to window: NSWindow) {
-        guard let label, !label.isEmpty, let contentView = window.contentView else { return }
+    private func addLabelOverlay(to animationWindow: NSWindow, on screen: NSScreen) {
+        guard let label, !label.isEmpty else { return }
 
-        let metrics = LabelMetrics(windowHeight: window.frame.height)
+        let metrics = LabelMetrics(windowHeight: animationWindow.frame.height)
 
         let textField = NSTextField(labelWithString: label)
         textField.font = NSFont.systemFont(ofSize: metrics.fontSize, weight: .semibold)
         textField.textColor = .white
         textField.alignment = .center
-        textField.lineBreakMode = .byTruncatingMiddle
-        textField.maximumNumberOfLines = 1
+        textField.lineBreakMode = .byWordWrapping
+        textField.maximumNumberOfLines = 0
         textField.translatesAutoresizingMaskIntoConstraints = false
 
         let pill = NSView()
@@ -225,13 +225,55 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             textField.bottomAnchor.constraint(equalTo: pill.bottomAnchor, constant: -metrics.vPadding),
         ])
 
-        contentView.addSubview(pill)
+        // Calculate the max pill width available on screen
+        let maxPillWidth = screen.visibleFrame.width - 2 * PillFrame.screenMargin
+        // Constrain text width so it wraps at a reasonable length
+        let textMaxWidth = min(maxPillWidth - 2 * metrics.hPadding, 400 * metrics.fontSize / 16)
+        textField.preferredMaxLayoutWidth = textMaxWidth
 
-        NSLayoutConstraint.activate([
-            pill.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            pill.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -metrics.bottomMargin),
-            pill.widthAnchor.constraint(lessThanOrEqualTo: contentView.widthAnchor, constant: -metrics.maxWidthInset),
-        ])
+        // Use the text field's own fittingSize (accounts for center-alignment
+        // internal padding that intrinsicContentSize under-reports)
+        let textFitting = textField.fittingSize
+        let pillSize = CGSize(
+            width: ceil(textFitting.width + 2 * metrics.hPadding),
+            height: ceil(textFitting.height + 2 * metrics.vPadding)
+        )
+        pill.setFrameSize(pillSize)
+
+        // Create a separate window for the pill
+        let pillFrame = PillFrame.calculate(
+            animationFrame: animationWindow.frame,
+            screenFrame: screen.visibleFrame,
+            pillSize: pillSize,
+            bottomMargin: metrics.bottomMargin
+        )
+
+        let pillWindow = NSWindow(
+            contentRect: pillFrame,
+            styleMask: .borderless,
+            backing: .buffered,
+            defer: false
+        )
+        pillWindow.isOpaque = false
+        pillWindow.backgroundColor = .clear
+        pillWindow.hasShadow = false
+        pillWindow.level = animationWindow.level
+        pillWindow.ignoresMouseEvents = true
+        pillWindow.collectionBehavior = [.canJoinAllSpaces, .stationary]
+
+        pill.frame = NSRect(origin: .zero, size: pillFrame.size)
+        textField.translatesAutoresizingMaskIntoConstraints = true
+        textField.frame = NSRect(
+            x: metrics.hPadding,
+            y: metrics.vPadding,
+            width: textFitting.width,
+            height: textFitting.height
+        )
+
+        pillWindow.contentView = pill
+        pillWindow.orderFrontRegardless()
+
+        windows.append(pillWindow)
     }
 
     private func playAnimation(_ animationView: LottieAnimationView) {
